@@ -5,17 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.runningapp.app.ui.components.RunModeFAB
-import com.runningapp.app.ui.navigation.BottomNavigationBar
-import com.runningapp.app.ui.navigation.Navigation
-import com.runningapp.app.ui.navigation.TopBar
+import com.runningapp.app.ui.navigation.*
 import com.runningapp.app.ui.theme.RunningAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,10 +31,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
+    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+    val scope = rememberCoroutineScope()
+
     Scaffold(modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = { TopBar() },
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = { TopBar(scope, scaffoldState) },
         floatingActionButton = { RunModeFAB() },
+        drawerContent = {
+            Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController)
+        },
         bottomBar = { BottomNavigationBar(navController) }
     ) {
         Navigation(navController)
