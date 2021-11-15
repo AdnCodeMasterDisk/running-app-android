@@ -27,10 +27,10 @@ fun Navigation(navController: NavHostController) {
     val dataItems2 = (0..10).map { SimpleListDataItem("30 km in October") }
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
-            HomeScreen(modifier = Modifier.fillMaxSize(), dataItems2)
+            HomeScreen()
         }
         composable(NavigationItem.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(modifier = Modifier.fillMaxSize(), dataItems2)
         }
         composable(NavigationItem.Explore.route) {
             ExploreScreen(modifier = Modifier.fillMaxSize(), dataItems)
