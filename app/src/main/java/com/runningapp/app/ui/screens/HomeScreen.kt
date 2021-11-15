@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.runningapp.app.ui.components.MonthlyGoalComponent
 
 @Composable
 fun HomeScreen() {
@@ -20,8 +21,8 @@ fun HomeScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .wrapContentSize(Alignment.Center)
     ) {
+        MonthlyGoalComponent()
         Text(
             text = "Home View",
             fontWeight = FontWeight.Bold,
