@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 fun RunModeFAB() {
     FloatingActionButton(
         onClick = { /* do something */ },
-        containerColor = MaterialTheme.colorScheme.tertiaryContainer) {
+        containerColor = MaterialTheme.colorScheme.primary) {
         Icon(Icons.Filled.PlayArrow, "Localized description")
     }
 }

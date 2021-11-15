@@ -21,7 +21,7 @@ fun BottomNavigationBar(navController: NavController) {
     )
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
-        contentColor =  MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.surface)
+//        contentColor =  MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.surface)
     ) {
         items.forEach { item ->
             NavigationBarItem(

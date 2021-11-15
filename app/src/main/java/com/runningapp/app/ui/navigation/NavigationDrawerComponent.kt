@@ -25,7 +25,9 @@ fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: N
     val items = listOf(
         NavigationItem.Home,
         NavigationItem.Profile,
-        NavigationItem.Explore
+        NavigationItem.Explore,
+        NavigationItem.Challenges,
+        NavigationItem.Settings
     )
     Column(
         modifier = Modifier
