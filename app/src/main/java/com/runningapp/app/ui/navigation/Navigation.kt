@@ -23,10 +23,11 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
 
 @Composable
 fun Navigation(navController: NavHostController) {
-    val dataItems = (0..100).map { SimpleListDataItem("Username") }
+    val dataItems = (0..10).map { SimpleListDataItem("Username") }
+    val dataItems2 = (0..10).map { SimpleListDataItem("30 km in October") }
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
-            HomeScreen()
+            HomeScreen(modifier = Modifier.fillMaxSize(), dataItems2)
         }
         composable(NavigationItem.Profile.route) {
             ProfileScreen()
