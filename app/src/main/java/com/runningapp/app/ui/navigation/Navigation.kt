@@ -20,6 +20,7 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
     object Challenges : NavigationItem("challenges", Icons.Outlined.EmojiEvents, "Challenges")
     object Settings : NavigationItem("settings", Icons.Outlined.Settings, "Settings")
     object Login : NavigationItem("login", Icons.Outlined.Login, "Login")
+    object Register : NavigationItem("register", Icons.Outlined.AppRegistration, "Register")
 }
 
 @Composable
@@ -44,6 +45,9 @@ fun Navigation(navController: NavHostController) {
         }
         composable(NavigationItem.Login.route) {
             LoginScreen()
+        }
+        composable(NavigationItem.Register.route) {
+            RegisterScreen()
         }
     }
 }

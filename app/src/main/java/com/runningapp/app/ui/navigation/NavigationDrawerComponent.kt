@@ -28,7 +28,8 @@ fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: N
         NavigationItem.Explore,
         NavigationItem.Challenges,
         NavigationItem.Settings,
-        NavigationItem.Login
+        NavigationItem.Login,
+        NavigationItem.Register
     )
     Column(
         modifier = Modifier
