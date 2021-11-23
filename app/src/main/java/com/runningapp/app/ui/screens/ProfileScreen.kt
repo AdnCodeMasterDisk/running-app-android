@@ -35,7 +35,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, simpleListDataItems: List<Simpl
         Text(
             text = "Challenges",
             style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)
         )
         LazyRow(modifier = modifier) {
             items(simpleListDataItems) { data ->
