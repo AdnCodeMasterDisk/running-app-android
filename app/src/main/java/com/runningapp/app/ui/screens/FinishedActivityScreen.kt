@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +30,8 @@ import com.runningapp.app.ui.theme.custom_color_blue
 @Composable
 fun FinishedActivityScreen() {
 //    val scrollState = rememberScrollState()
+    val openDialog = remember { mutableStateOf(true) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,7 +74,7 @@ fun FinishedActivityScreen() {
 //            }
 
             Button(
-                onClick = { },
+                onClick = { openDialog.value = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .size(75.dp),
@@ -89,6 +93,42 @@ fun FinishedActivityScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         RunActivityStatsComponent()
+
+        if (openDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    // Dismiss the dialog when the user clicks outside the dialog or on the back
+                    // button. If you want to disable that functionality, simply use an empty
+                    // onDismissRequest.
+                    openDialog.value = false
+                },
+                icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+                title = {
+                    Text(text = "Share")
+                },
+                text = {
+                    Text("Do you want to share this activity?")
+                },
+                confirmButton = {
+                    FilledTonalButton(
+                        onClick = {
+                            openDialog.value = false
+                        }
+                    ) {
+                        Text("Share")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            openDialog.value = false
+                        }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }
 
