@@ -86,7 +86,7 @@ fun RunActivityStatsComponent() {
 
         Row(
             modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Surface(

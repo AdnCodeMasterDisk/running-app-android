@@ -3,6 +3,7 @@ import androidx.compose.ui.graphics.Color
 
 val custom_color_yellow = Color(0xFFE9BE59)
 val custom_color_red = Color(0xFFD34646)
+val custom_color_blue = Color(0xFF01BAEF)
 
 
 val md_theme_light_primary = Color(0xFF6750A4)

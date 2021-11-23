@@ -8,8 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,12 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.runningapp.app.R
 import com.runningapp.app.ui.components.RunActivityStatsComponent
-import com.runningapp.app.ui.theme.custom_color_red
-import com.runningapp.app.ui.theme.custom_color_yellow
+import com.runningapp.app.ui.theme.custom_color_blue
 
 
 @Composable
-fun RunActivityScreen() {
+fun FinishedActivityScreen() {
 //    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -48,7 +46,7 @@ fun RunActivityScreen() {
 
         Box(
             modifier = Modifier
-                .height(300.dp)
+                .height(282.dp)
                 .fillMaxWidth()
         ) {
             Image(
@@ -70,35 +68,21 @@ fun RunActivityScreen() {
 //            ) {
 //                Text("To do map")
 //            }
-            Button(
-                onClick = { },
-                modifier = Modifier
-                    .padding(bottom = 12.dp)
-                    .align(Alignment.BottomStart)
-                    .size(75.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = custom_color_red)
-            ) {
-                Icon(
-                    Icons.Filled.Stop,
-                    contentDescription = "Stop",
-                    modifier = Modifier.size(64.dp),
-                    tint = Color.White)
-            }
 
             Button(
                 onClick = { },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .size(100.dp),
+                    .size(75.dp),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = custom_color_yellow)
+                colors = ButtonDefaults.buttonColors(containerColor = custom_color_blue)
             ) {
                 Icon(
-                    Icons.Filled.Pause,
-                    contentDescription = "Pause",
+                    Icons.Filled.Share,
+                    contentDescription = "Share",
                     modifier = Modifier.size(64.dp),
-                    tint = Color.White)
+                    tint = Color.White
+                )
             }
         }
 
@@ -111,6 +95,6 @@ fun RunActivityScreen() {
 
 @Preview(showBackground = true)
 @Composable
-fun RunActivityScreenPreview() {
-    RunActivityScreen()
+fun FinishedActivityScreenPreview() {
+    FinishedActivityScreen()
 }
