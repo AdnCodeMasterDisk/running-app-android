@@ -7,9 +7,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.runningapp.app.ui.components.RunModeFAB
 import com.runningapp.app.ui.navigation.*
@@ -36,15 +39,29 @@ fun MyApp() {
 
     Scaffold(modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
-        topBar = { TopBar(scope, scaffoldState) },
-        floatingActionButton = { RunModeFAB() },
+
+        topBar = {
+            if(currentRoute(navController) != "runMode") {
+               TopBar(scope, scaffoldState)
+            }
+        },
+        floatingActionButton = {
+            if(currentRoute(navController)  != "runMode" || currentRoute(navController)  != "home") {
+                RunModeFAB()
+            }
+        },
         drawerContent = {
             Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController)
         },
-        bottomBar = { BottomNavigationBar(navController) }
-    ) {
-        Navigation(navController)
-    }
+        bottomBar = { BottomNavigationBar(navController) },
+        content = { Navigation(navController)},
+        scaffoldState = scaffoldState
+    )
+}
+
+@Composable
+fun currentRoute(navController: NavHostController): String? {
+    return navController.currentBackStackEntry?.destination?.route
 }
 
 // Preview for App

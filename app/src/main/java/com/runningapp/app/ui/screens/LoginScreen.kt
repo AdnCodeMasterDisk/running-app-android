@@ -88,7 +88,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
             value = usernameSate.value,
             onValueChange = {
                 usernameSate.value = it
@@ -112,7 +112,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             )
         )
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth().focusRequester(focusRequester),
             value = passwordSate.value,
             onValueChange = { passwordSate.value = it },
             shape = RoundedCornerShape(10.dp),

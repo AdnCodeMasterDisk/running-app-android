@@ -6,7 +6,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
- private val LightThemeColors = lightColorScheme(
+private val LightThemeColors = lightColorScheme(
 
 	primary = md_theme_light_primary,
 	onPrimary = md_theme_light_onPrimary,
@@ -33,8 +33,8 @@ import androidx.compose.runtime.Composable
 	outline = md_theme_light_outline,
 	inverseOnSurface = md_theme_light_inverseOnSurface,
 	inverseSurface = md_theme_light_inverseSurface,
-) 
- private val DarkThemeColors = darkColorScheme(
+)
+private val DarkThemeColors = darkColorScheme(
 
 	primary = md_theme_dark_primary,
 	onPrimary = md_theme_dark_onPrimary,
@@ -64,18 +64,18 @@ import androidx.compose.runtime.Composable
 )
 @Composable
 fun RunningAppTheme(
-useDarkTheme: Boolean = isSystemInDarkTheme(),
-content: @Composable() () -> Unit
+	useDarkTheme: Boolean = isSystemInDarkTheme(),
+	content: @Composable() () -> Unit
 ) {
-val colors = if (!useDarkTheme) {
-  LightThemeColors
-} else {
-  DarkThemeColors
-}
+	val colors = if (!useDarkTheme) {
+		LightThemeColors
+	} else {
+		DarkThemeColors
+	}
 
-MaterialTheme(
-  colorScheme = colors,
-  typography = AppTypography,
-  content = content
-)
+	MaterialTheme(
+		colorScheme = colors,
+		typography = AppTypography,
+		content = content
+	)
 }

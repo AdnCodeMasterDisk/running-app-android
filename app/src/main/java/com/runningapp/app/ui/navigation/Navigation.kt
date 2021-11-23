@@ -21,6 +21,7 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
     object Settings : NavigationItem("settings", Icons.Outlined.Settings, "Settings")
     object Login : NavigationItem("login", Icons.Outlined.Login, "Login")
     object Register : NavigationItem("register", Icons.Outlined.AppRegistration, "Register")
+    object RunMode : NavigationItem("runMode", Icons.Outlined.DirectionsRun, "runMode")
 }
 
 @Composable
@@ -48,6 +49,9 @@ fun Navigation(navController: NavHostController) {
         }
         composable(NavigationItem.Register.route) {
             RegisterScreen()
+        }
+        composable(NavigationItem.RunMode.route) {
+            RunActivityScreen()
         }
     }
 }

@@ -1,6 +1,9 @@
 package com.runningapp.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
+val custom_color_yellow = Color(0xFFE9BE59)
+val custom_color_red = Color(0xFFD34646)
+
 
 val md_theme_light_primary = Color(0xFF6750A4)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
