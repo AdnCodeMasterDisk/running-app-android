@@ -46,7 +46,6 @@ import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR
 import com.runningapp.app.ui.utils.Constants.POLYLINE_WIDTH
 import com.runningapp.app.ui.utils.TrackingUtility
 import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
-import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR2
 import java.math.BigDecimal
 import java.math.RoundingMode
 
