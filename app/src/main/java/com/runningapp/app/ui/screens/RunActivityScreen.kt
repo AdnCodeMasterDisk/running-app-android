@@ -46,11 +46,13 @@ import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR
 import com.runningapp.app.ui.utils.Constants.POLYLINE_WIDTH
 import com.runningapp.app.ui.utils.TrackingUtility
 import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
+import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR2
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 private var isTracking: Boolean = false
 private var pathPoints = mutableListOf<LatLng>()
+private var pathPointsAll = mutableListOf<LatLng>()
 private var map: GoogleMap? = null
 private var curTimeInMillis: Long = 0L
 private lateinit var context: Context
@@ -64,7 +66,6 @@ fun RunActivityScreen() {
     val caloriesBurned = remember { mutableStateOf(0) }
     val pace = remember { mutableStateOf("00'00''") }
 
-
     TrackingService.isTracking.observe(LocalLifecycleOwner.current, Observer {
         updateTracking(it)
     })
@@ -72,7 +73,16 @@ fun RunActivityScreen() {
         // TODO: dlaczego obserwuje size razy??? Napraw!
         if (it.isNotEmpty() && (pathPoints.isEmpty() || pathPoints.last() != it.last())) {
             pathPoints.add(it.last())
-            addLatestPolyline()
+            if (pathPoints.size != it.size) {
+                println("pp size: " + pathPoints.size + ",  it size" + it.size)
+                pathPoints.clear()
+                pathPoints.addAll(it)
+                addAllPolylines()
+                distanceInMeters = TrackingUtility.calculatePolylineLength(pathPoints).toInt()
+            } else {
+                addLatestPolyline()
+            }
+
             moveCameraToUser()
 
             val distanceTemp = ((distanceInMeters / 1000f).toDouble())
@@ -133,8 +143,8 @@ fun RunActivityScreen() {
                     mapView.getMapAsync {
                         map = it
                         map!!.isMyLocationEnabled = true
-                        moveCameraToUser()
-                        // addAllPolylines()
+                      ///  moveCameraToUser()
+
                     }
                 }
             }
@@ -291,9 +301,38 @@ fun RunActivityScreen() {
             }
         }
     }
+    val openDialog = remember { mutableStateOf(true) }
+
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+            },
+            title = {
+                Text(text = "Running activity")
+            },
+            text = {
+                Text(
+                    "You can start whenever you're ready"
+                )
+            },
+            confirmButton = {
+                FilledTonalButton(
+                    onClick = {
+                        openDialog.value = false
+                        toggleRun()
+                    }
+                ) {
+                    Text("Start")
+                }
+            },
+            dismissButton = {
+                }
+        )
+    }
 }
 
 private fun toggleRun() {
+    println("toggle run")
     if (isTracking) {
         sendCommandToService(ACTION_PAUSE_SERVICE)
     } else {
@@ -329,15 +368,13 @@ private fun moveCameraToUser() {
     }
 }
 
-//    private fun addAllPolylines() {
-//        for(polyline in pathPoints) {
-//            val polylineOptions = PolylineOptions()
-//                .color(POLYLINE_COLOR)
-//                .width(POLYLINE_WIDTH)
-//                .addAll(polyline)
-//            map?.addPolyline(polylineOptions)
-//        }
-//    }
+private fun addAllPolylines() {
+    val polylineOptions = PolylineOptions()
+        .color(POLYLINE_COLOR)
+        .width(POLYLINE_WIDTH)
+        .addAll(pathPoints)
+    map?.addPolyline(polylineOptions)
+}
 
 private fun addLatestPolyline() {
     if (pathPoints.isNotEmpty() && pathPoints.size > 1) {
@@ -369,7 +406,6 @@ private fun sendCommandToService(action: String) =
         it.action = action
         context.startService(it)
     }
-
 
 @Preview(showBackground = true)
 @Composable

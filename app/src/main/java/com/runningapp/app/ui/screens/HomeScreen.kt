@@ -103,7 +103,7 @@ fun HomeScreen(navHostController: NavHostController) {
                 }
 
                 Button(
-                    onClick = { },
+                    onClick = { navHostController.navigate("runMode") },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .size(100.dp),

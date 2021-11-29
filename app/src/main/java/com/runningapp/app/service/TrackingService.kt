@@ -64,17 +64,6 @@ class TrackingService : LifecycleService() {
         val pathPoints: LiveData<Polyline> get() = _pathPoints
     }
 
-//    fun getLoc() : Location? {
-//        var locat : Location? = null
-//        fusedLocationProviderClient.lastLocation
-//            .addOnSuccessListener { location : Location? ->
-//                if (location != null) {
-//                    locat =  location
-//                }
-//            }
-//
-//        return locat
-//    }
 
     private fun postInitialValues() {
         _isTracking.postValue(false)
@@ -96,7 +85,7 @@ class TrackingService : LifecycleService() {
         curNotificationBuilder = baseNotificationBuilder
         postInitialValues()
         fusedLocationProviderClient = FusedLocationProviderClient(this)
-
+        println("oncreate service")
         _isTracking.observe(this, Observer {
             updateLocationTracking(it)
             updateNotificationTrackingState(it)
@@ -238,7 +227,7 @@ class TrackingService : LifecycleService() {
                 result?.locations?.let { locations ->
                     for (location in locations) {
                         addPathPoint(location)
-                        //println("NEW LOCATION: ${location.latitude}, ${location.longitude}")
+                        println("NEW LOCATION: ${location.latitude}, ${location.longitude}")
                     }
                 }
             }
@@ -261,6 +250,7 @@ class TrackingService : LifecycleService() {
     } ?: _pathPoints.postValue(mutableListOf())
 
     private fun startForegroundService() {
+        println("start foreground service")
         startTimer()
         _isTracking.postValue(true)
 
