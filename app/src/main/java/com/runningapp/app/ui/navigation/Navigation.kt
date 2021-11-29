@@ -22,15 +22,19 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
     object Login : NavigationItem("login", Icons.Outlined.Login, "Login")
     object Register : NavigationItem("register", Icons.Outlined.AppRegistration, "Register")
     object RunMode : NavigationItem("runMode", Icons.Outlined.DirectionsRun, "runMode")
+    object SplashScreen : NavigationItem("splash",Icons.Outlined.Splitscreen,"Splash Screen")
 }
 
 @Composable
 fun Navigation(navController: NavHostController) {
     val dataItems = (0..10).map { SimpleListDataItem("Username") }
     val dataItems2 = (0..10).map { SimpleListDataItem("30 km in October") }
-    NavHost(navController, startDestination = NavigationItem.Home.route) {
+    NavHost(navController, startDestination = NavigationItem.SplashScreen.route) {
+        composable(NavigationItem.SplashScreen.route) {
+            SplashScreen(navController)
+        }
         composable(NavigationItem.Home.route) {
-            HomeScreen()
+            HomeScreen(navController)
         }
         composable(NavigationItem.Profile.route) {
             ProfileScreen(modifier = Modifier.fillMaxSize(), dataItems2)

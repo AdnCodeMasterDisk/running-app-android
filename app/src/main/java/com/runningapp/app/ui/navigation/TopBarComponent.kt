@@ -21,12 +21,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState) {
+fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState, topBarText: String) {
     SmallTopAppBar(
         modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp),
         title = {
             Text(
-                text = "Explore the community",
+                text = topBarText,
                 style = MaterialTheme.typography.titleLarge,
             )
         },
@@ -63,5 +63,5 @@ fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState) {
 fun TopBarPreview() {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-    TopBar(scope = scope, scaffoldState = scaffoldState)
+    TopBar(scope = scope, scaffoldState = scaffoldState, topBarText = "Example preview")
 }

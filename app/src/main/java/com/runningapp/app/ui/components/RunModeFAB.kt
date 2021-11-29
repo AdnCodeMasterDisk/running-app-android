@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 
 @Composable
 fun RunModeFAB() {
-    val openDialog = remember { mutableStateOf(true) }
+    val openDialog = remember { mutableStateOf(false) }
 
     FloatingActionButton(
         onClick = { openDialog.value = true },

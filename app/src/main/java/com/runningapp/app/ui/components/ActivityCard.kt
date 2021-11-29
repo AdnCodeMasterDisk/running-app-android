@@ -61,10 +61,6 @@ fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
                     Column(modifier = Modifier.padding(horizontal = 8.dp)) {
                         Row {
                             Text(
-                                text = "Posted ",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                            Text(
                                 text = "24 Oct 2021",
                                 style = MaterialTheme.typography.labelMedium
                             )
