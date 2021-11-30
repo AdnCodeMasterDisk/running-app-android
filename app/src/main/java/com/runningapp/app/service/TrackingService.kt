@@ -133,7 +133,6 @@ class TrackingService : LifecycleService() {
     private var lastSecondTimestamp = 0L
 
     private fun startTimer() {
-        addEmptyPolyline()
         _isTracking.postValue(true)
         timeStarted = System.currentTimeMillis()
         isTimerEnabled = true
@@ -243,11 +242,6 @@ class TrackingService : LifecycleService() {
             }
         }
     }
-
-    private fun addEmptyPolyline() = _pathPoints.value?.apply {
-        add(LatLng(0.0, 0.0))
-        _pathPoints.postValue(this)
-    } ?: _pathPoints.postValue(mutableListOf())
 
     private fun startForegroundService() {
         println("start foreground service")

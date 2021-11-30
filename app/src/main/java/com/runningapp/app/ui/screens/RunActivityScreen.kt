@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.LocalFireDepartment
@@ -34,6 +35,7 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import com.runningapp.app.service.TrackingService
 import com.runningapp.app.ui.theme.custom_color_red
@@ -46,16 +48,17 @@ import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR
 import com.runningapp.app.ui.utils.Constants.POLYLINE_WIDTH
 import com.runningapp.app.ui.utils.TrackingUtility
 import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
+import com.runningapp.app.ui.theme.custom_color_green
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 private var isTracking: Boolean = false
 private var pathPoints = mutableListOf<LatLng>()
-private var pathPointsAll = mutableListOf<LatLng>()
 private var map: GoogleMap? = null
 private var curTimeInMillis: Long = 0L
 private lateinit var context: Context
 private var distanceInMeters = 0
+private var wasResumed: Boolean = false
 
 @Composable
 fun RunActivityScreen() {
@@ -64,22 +67,27 @@ fun RunActivityScreen() {
     val avgSpeed = remember { mutableStateOf(0.0) }
     val caloriesBurned = remember { mutableStateOf(0) }
     val pace = remember { mutableStateOf("00'00''") }
+    val isTrackingUI = remember { mutableStateOf(false) }
 
     TrackingService.isTracking.observe(LocalLifecycleOwner.current, Observer {
-        updateTracking(it)
+        isTracking = it
+        isTrackingUI.value = isTracking
     })
     TrackingService.pathPoints.observe(LocalLifecycleOwner.current, Observer {
         // TODO: dlaczego obserwuje size razy??? Napraw!
         if (it.isNotEmpty() && (pathPoints.isEmpty() || pathPoints.last() != it.last())) {
             pathPoints.add(it.last())
             if (pathPoints.size != it.size) {
-                println("pp size: " + pathPoints.size + ",  it size" + it.size)
                 pathPoints.clear()
                 pathPoints.addAll(it)
                 addAllPolylines()
                 distanceInMeters = TrackingUtility.calculatePolylineLength(pathPoints).toInt()
             } else {
-                addLatestPolyline()
+                if (wasResumed) {
+                    wasResumed = false
+                } else {
+                    addLatestPolyline()
+                }
             }
 
             moveCameraToUser()
@@ -165,20 +173,42 @@ fun RunActivityScreen() {
                 )
             }
 
-            Button(
-                onClick = { toggleRun() },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(100.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = custom_color_yellow)
-            ) {
-                Icon(
-                    Icons.Filled.Pause,
-                    contentDescription = "Pause",
-                    modifier = Modifier.size(64.dp),
-                    tint = Color.White
-                )
+            if (isTrackingUI.value) {
+                Button(
+                    onClick = { toggleRun() },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(100.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = custom_color_yellow)
+                ) {
+                    Icon(
+                        Icons.Filled.Pause,
+                        contentDescription = "Pause",
+                        modifier = Modifier.size(64.dp),
+                        tint = Color.White
+                    )
+                }
+            }
+            else {
+                Button(
+                    onClick = {
+                        toggleRun()
+                        wasResumed = true
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(100.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = custom_color_green)
+                ) {
+                    Icon(
+                        Icons.Filled.PlayArrow,
+                        contentDescription = "Resume",
+                        modifier = Modifier.size(64.dp),
+                        tint = Color.White
+                    )
+                }
             }
         }
 
@@ -340,21 +370,11 @@ private fun toggleRun() {
 }
 
 private fun stopRun() {
+    zoomToSeeWholeTrack()
     sendCommandToService(ACTION_STOP_SERVICE)
     //findNavController().navigate(R.id.action_trackingFragment_to_runFragment)
 }
 
-private fun updateTracking(isTracking: Boolean) {
-    //this.isTracking = isTracking
-    //  if(!isTracking) {
-    //  btnToggleRun.text = "Start"
-    //  btnFinishRun.visibility = View.VISIBLE
-    // } else {
-    //   btnToggleRun.text = "Stop"
-    //   menu?.getItem(0)?.isVisible = true
-    //   btnFinishRun.visibility = View.GONE
-    //   }
-}
 
 private fun moveCameraToUser() {
     if (pathPoints.isNotEmpty()) {
@@ -405,6 +425,22 @@ private fun sendCommandToService(action: String) =
         it.action = action
         context.startService(it)
     }
+
+private fun zoomToSeeWholeTrack() {
+    val bounds = LatLngBounds.Builder()
+    for(pos in pathPoints) {
+        bounds.include(pos)
+    }
+
+    map?.moveCamera(
+        CameraUpdateFactory.newLatLngBounds(
+            bounds.build(),
+            500,
+            500,
+            10
+        )
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
