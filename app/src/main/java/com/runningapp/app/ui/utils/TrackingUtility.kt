@@ -4,7 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.location.Location
 import android.os.Build
-import com.runningapp.app.service.Polyline
+import com.runningapp.app.service.Leg
 import com.vmadalin.easypermissions.EasyPermissions
 import java.util.concurrent.TimeUnit
 
@@ -26,18 +26,13 @@ object TrackingUtility {
             )
         }
 
-    fun getFormattedStopWatchTime(ms: Long, includeMillis: Boolean = false): String {
+    fun getFormattedStopWatchTime(ms: Long): String {
         var milliseconds = ms
         val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
         milliseconds -= TimeUnit.HOURS.toMillis(hours)
         val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
         milliseconds -= TimeUnit.MINUTES.toMillis(minutes)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
-        if (!includeMillis) {
-            return "${if (hours < 10) "0" else ""}$hours:" +
-                    "${if (minutes < 10) "0" else ""}$minutes:" +
-                    "${if (seconds < 10) "0" else ""}$seconds"
-        }
         milliseconds -= TimeUnit.SECONDS.toMillis(seconds)
         milliseconds /= 10
         return "${if (hours < 10) "0" else ""}$hours:" +
@@ -46,11 +41,22 @@ object TrackingUtility {
                 "${if (milliseconds < 10) "0" else ""}$milliseconds"
     }
 
-    fun calculatePolylineLength(polyline: Polyline): Float {
+    fun getFormattedPace(ms: Long): String {
+        var milliseconds = ms
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+        milliseconds -= TimeUnit.MINUTES.toMillis(minutes)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds)
+        milliseconds -= TimeUnit.SECONDS.toMillis(seconds)
+        milliseconds /= 10
+        return  "${if (minutes < 10) "0" else ""}$minutes'" +
+                "${if (seconds < 10) "0" else ""}$seconds''"
+    }
+
+    fun calculatePolylineLength(leg: Leg): Float {
         var distance = 0f
-        for(i in 0..polyline.size - 2) {
-            val pos1 = polyline[i]
-            val pos2 = polyline[i + 1]
+        for(i in 0..leg.size - 2) {
+            val pos1 = leg[i]
+            val pos2 = leg[i + 1]
 
             val result = FloatArray(1)
             Location.distanceBetween(

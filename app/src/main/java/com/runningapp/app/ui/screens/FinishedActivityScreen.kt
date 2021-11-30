@@ -30,14 +30,13 @@ import com.runningapp.app.ui.theme.custom_color_blue
 @Composable
 fun FinishedActivityScreen() {
 //    val scrollState = rememberScrollState()
-    val openDialog = remember { mutableStateOf(true) }
+    val openDialog = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
-            .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = "2.53 km",

@@ -22,6 +22,7 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
     object Login : NavigationItem("login", Icons.Outlined.Login, "Login")
     object Register : NavigationItem("register", Icons.Outlined.AppRegistration, "Register")
     object RunMode : NavigationItem("runMode", Icons.Outlined.DirectionsRun, "runMode")
+    object FinishedRunMode : NavigationItem("finishedRunMode", Icons.Outlined.DirectionsRun, "finishedRunMode")
     object SplashScreen : NavigationItem("splash",Icons.Outlined.Splitscreen,"Splash Screen")
 }
 
@@ -55,7 +56,10 @@ fun Navigation(navController: NavHostController) {
             RegisterScreen()
         }
         composable(NavigationItem.RunMode.route) {
-            RunActivityScreen()
+            RunActivityScreen(navController)
+        }
+        composable(NavigationItem.FinishedRunMode.route) {
+            FinishedActivityScreen()
         }
     }
 }

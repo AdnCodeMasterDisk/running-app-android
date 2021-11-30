@@ -32,11 +32,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Observer
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
-import com.runningapp.app.service.Polyline
+import com.runningapp.app.service.Leg
 import com.runningapp.app.service.TrackingService
 import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.theme.custom_color_yellow
@@ -53,15 +55,15 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private var isTracking: Boolean = false
-private var pathPoints = mutableListOf<Polyline>()
+private var pathPoints = mutableListOf<Leg>()
 private var map: GoogleMap? = null
-private var curTimeInMillis: Long = 0L
+private var currentTimeInMilliseconds: Long = 0L
 private lateinit var context: Context
 private var distanceInMeters = 0
 private var wasResumedOrStarted: Boolean = false
 
 @Composable
-fun RunActivityScreen() {
+fun RunActivityScreen(navController: NavHostController) {
     val totalTime = remember { mutableStateOf("00:00:00:00") }
     val distance = remember { mutableStateOf(0.0) }
     val avgSpeed = remember { mutableStateOf(0.0) }
@@ -73,7 +75,7 @@ fun RunActivityScreen() {
         isTracking = it
         isTrackingUI.value = isTracking
     })
-    TrackingService.pathPoints.observe(LocalLifecycleOwner.current, Observer {
+    TrackingService.routes.observe(LocalLifecycleOwner.current, Observer {
         if (it.isNotEmpty()) {
             // TODO: Somehow location change observer executes it.last().size times,
             //  pathPoints.last().last() != it.last().last() prevents adding same LatLng multiple times
@@ -91,7 +93,7 @@ fun RunActivityScreen() {
                     if (pathPoints.last().size + 1 != it.last().size) {
                         pathPoints.last().clear()
                         pathPoints.last().addAll(it.last())
-                        addAllPolylines()
+                        addPolylinesForLastPath()
                         distanceInMeters = 0
                         for (polyline in pathPoints) {
                             distanceInMeters += TrackingUtility.calculatePolylineLength(polyline)
@@ -102,11 +104,11 @@ fun RunActivityScreen() {
                     //  should execute when RunActivityScreen is running
                     else {
                         pathPoints.last().add(it.last().last())
-                        addLatestPolyline()
+                        addPolylineForTwoLatestPoints()
                     }
                 }
 
-                moveCameraToUser()
+                zoomCameraToLastObservedPoint()
 
                 val distanceTemp = ((distanceInMeters / 1000f).toDouble())
                 distance.value =
@@ -117,19 +119,19 @@ fun RunActivityScreen() {
         }
     })
 
-    TrackingService.timeRunInMillis.observe(LocalLifecycleOwner.current, Observer {
-        curTimeInMillis = it
-        val formattedTime = TrackingUtility.getFormattedStopWatchTime(curTimeInMillis, true)
+    TrackingService.timeRunInMilliseconds.observe(LocalLifecycleOwner.current, Observer {
+        currentTimeInMilliseconds = it
+        val formattedTime = TrackingUtility.getFormattedStopWatchTime(currentTimeInMilliseconds)
         totalTime.value = formattedTime
 
-        val speedTemp = ((distance.value) / (curTimeInMillis / 1000f / 60 / 60) * 10) / 10f
-        if (!speedTemp.isNaN() && !speedTemp.isInfinite())
-            avgSpeed.value = BigDecimal(speedTemp).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+        if (distanceInMeters > 10) {
+            val speedTemp = ((distance.value) / (currentTimeInMilliseconds / 1000f / 60 / 60) * 10) / 10f
+            if (!speedTemp.isNaN() && !speedTemp.isInfinite())
+                avgSpeed.value = BigDecimal(speedTemp).setScale(1, RoundingMode.HALF_EVEN).toDouble()
 
-        val minutes = ((curTimeInMillis / 1000f / 60) * 10) / 10f
-        val minutesForOneKm = minutes / distance.value
-        if (!minutesForOneKm.isNaN() && !minutesForOneKm.isInfinite())
-            pace.value = BigDecimal(minutesForOneKm).setScale(2, RoundingMode.HALF_EVEN).toString()
+            val millisForOneKm = (currentTimeInMilliseconds / distance.value).toLong()
+            pace.value = TrackingUtility.getFormattedPace(millisForOneKm)
+        }
     })
 
     context = LocalContext.current
@@ -139,7 +141,7 @@ fun RunActivityScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
-            .verticalScroll(rememberScrollState())
+          //  .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = distance.value.toString() + " km",
@@ -192,7 +194,7 @@ fun RunActivityScreen() {
 
             if (isTrackingUI.value) {
                 Button(
-                    onClick = { toggleRun() },
+                    onClick = { startRun() },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .size(100.dp),
@@ -209,7 +211,7 @@ fun RunActivityScreen() {
             } else {
                 Button(
                     onClick = {
-                        toggleRun()
+                        startRun()
                         wasResumedOrStarted = true
                     },
                     modifier = Modifier
@@ -364,7 +366,7 @@ fun RunActivityScreen() {
                 FilledTonalButton(
                     onClick = {
                         openDialog.value = false
-                        toggleRun()
+                        startRun()
                         wasResumedOrStarted = true
                     }
                 ) {
@@ -377,8 +379,7 @@ fun RunActivityScreen() {
     }
 }
 
-private fun toggleRun() {
-    println("toggle run")
+private fun startRun() {
     if (isTracking) {
         sendCommandToService(ACTION_PAUSE_SERVICE)
     } else {
@@ -389,11 +390,10 @@ private fun toggleRun() {
 private fun stopRun() {
     zoomToSeeWholeTrack()
     sendCommandToService(ACTION_STOP_SERVICE)
-    //findNavController().navigate(R.id.action_trackingFragment_to_runFragment)
 }
 
 
-private fun moveCameraToUser() {
+private fun zoomCameraToLastObservedPoint() {
     if (pathPoints.last().isNotEmpty()) {
         map?.animateCamera(
             CameraUpdateFactory.newLatLngZoom(
@@ -404,7 +404,7 @@ private fun moveCameraToUser() {
     }
 }
 
-private fun addAllPolylines() {
+private fun addPolylinesForLastPath() {
     val polylineOptions = PolylineOptions()
         .color(POLYLINE_COLOR)
         .width(POLYLINE_WIDTH)
@@ -412,7 +412,7 @@ private fun addAllPolylines() {
     map?.addPolyline(polylineOptions)
 }
 
-private fun addLatestPolyline() {
+private fun addPolylineForTwoLatestPoints() {
     if (pathPoints.last().isNotEmpty() && pathPoints.last().size > 1) {
         val preLastLatLng = pathPoints.last()[pathPoints.last().size - 2]
         val lastLatLng = pathPoints.last().last()
@@ -445,7 +445,6 @@ private fun sendCommandToService(action: String) =
 
 private fun zoomToSeeWholeTrack() {
     val bounds = LatLngBounds.Builder()
-
     for (polyline in pathPoints) {
         for (pos in polyline) {
             bounds.include(pos)
@@ -464,6 +463,6 @@ private fun zoomToSeeWholeTrack() {
 @Preview(showBackground = true)
 @Composable
 fun RunActivityScreenPreview() {
-    RunActivityScreen()
+//    RunActivityScreen()
 }
 

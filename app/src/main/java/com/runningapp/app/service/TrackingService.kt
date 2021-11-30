@@ -15,7 +15,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.google.android.gms.location.*
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.maps.model.LatLng
@@ -37,13 +36,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-typealias Polyline = MutableList<LatLng>
-typealias Polylines = MutableList<Polyline>
+typealias Leg = MutableList<LatLng>
+typealias Route = MutableList<Leg>
 
 class TrackingService : LifecycleService() {
 
-    private var isFirstRun = true
+    private var isStart = true
     private var serviceKilled = false
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -51,22 +49,19 @@ class TrackingService : LifecycleService() {
     private val timeRunInSeconds = MutableLiveData<Long>()
 
     private lateinit var baseNotificationBuilder: NotificationCompat.Builder
-
     private lateinit var curNotificationBuilder: NotificationCompat.Builder
 
-
     companion object {
-        val timeRunInMillis = MutableLiveData<Long>()
+        val timeRunInMilliseconds = MutableLiveData<Long>()
         val isTracking = MutableLiveData<Boolean>()
-        val pathPoints = MutableLiveData<Polylines>()
+        val routes = MutableLiveData<Route>()
     }
-
 
     private fun postInitialValues() {
         isTracking.postValue(false)
-        pathPoints.postValue(mutableListOf())
+        routes.postValue(mutableListOf())
         timeRunInSeconds.postValue(0L)
-        timeRunInMillis.postValue(0L)
+        timeRunInMilliseconds.postValue(0L)
     }
 
     override fun onCreate() {
@@ -82,16 +77,16 @@ class TrackingService : LifecycleService() {
         curNotificationBuilder = baseNotificationBuilder
         postInitialValues()
         fusedLocationProviderClient = FusedLocationProviderClient(this)
-        println("oncreate service")
-        isTracking.observe(this, Observer {
+
+        isTracking.observe(this) {
             updateLocationTracking(it)
-            updateNotificationTrackingState(it)
-        })
+            updateNotification(it)
+        }
     }
 
     private fun killService() {
         serviceKilled = true
-        isFirstRun = true
+        isStart = true
         pauseService()
         postInitialValues()
         stopForeground(true)
@@ -102,20 +97,17 @@ class TrackingService : LifecycleService() {
         intent?.let {
             when (it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
-                    if (isFirstRun) {
+                    if (isStart) {
                         startForegroundService()
-                        isFirstRun = false
+                        isStart = false
                     } else {
-                        println("Resuming service...")
                         startTimer()
                     }
                 }
                 ACTION_PAUSE_SERVICE -> {
-                    println("Paused service")
                     pauseService()
                 }
                 ACTION_STOP_SERVICE -> {
-                    println("Stopped service")
                     killService()
                 }
             }
@@ -124,29 +116,27 @@ class TrackingService : LifecycleService() {
     }
 
     private var isTimerEnabled = false
-    private var lapTime = 0L
+    private var legTime = 0L
     private var timeRun = 0L
     private var timeStarted = 0L
     private var lastSecondTimestamp = 0L
 
     private fun startTimer() {
-        addEmptyPolyline()
+        startNewLeg()
         isTracking.postValue(true)
         timeStarted = System.currentTimeMillis()
         isTimerEnabled = true
         CoroutineScope(Dispatchers.Main).launch {
             while (isTracking.value!!) {
-                // time difference between now and timeStarted
-                lapTime = System.currentTimeMillis() - timeStarted
-                // post the new lapTime
-                timeRunInMillis.postValue(timeRun + lapTime)
-                if (timeRunInMillis.value!! >= lastSecondTimestamp + 1000L) {
+                legTime = System.currentTimeMillis() - timeStarted
+                timeRunInMilliseconds.postValue(timeRun + legTime)
+                if (timeRunInMilliseconds.value!! >= lastSecondTimestamp + 1000L) {
                     timeRunInSeconds.postValue(timeRunInSeconds.value!! + 1)
                     lastSecondTimestamp += 1000L
                 }
                 delay(TIMER_UPDATE_INTERVAL)
             }
-            timeRun += lapTime
+            timeRun += legTime
         }
     }
 
@@ -164,7 +154,7 @@ class TrackingService : LifecycleService() {
         isTimerEnabled = false
     }
 
-    private fun updateNotificationTrackingState(isTracking: Boolean) {
+    private fun updateNotification(isTracking: Boolean) {
         val notificationActionText = if (isTracking) "Pause" else "Resume"
         val pendingIntent = if (isTracking) {
             val pauseIntent = Intent(this, TrackingService::class.java).apply {
@@ -187,7 +177,7 @@ class TrackingService : LifecycleService() {
         }
         if (!serviceKilled) {
             curNotificationBuilder = baseNotificationBuilder
-                // TO DO: change to pause icon
+                // TODO: change to pause icon
                 .addAction(
                     R.drawable.ic_directions_run_black_24dp,
                     notificationActionText,
@@ -200,7 +190,8 @@ class TrackingService : LifecycleService() {
     @SuppressLint("MissingPermission")
     private fun updateLocationTracking(isTracking: Boolean) {
         if (isTracking) {
-            //  if (TrackingUtility.hasLocationPermissions(this)) {
+            // TODO: Change to not deprecated (fusedLocationProvider request)
+            // if (TrackingUtility.hasLocationPermissions(this)) {
             val request = LocationRequest().apply {
                 interval = LOCATION_UPDATE_INTERVAL
                 fastestInterval = FASTEST_LOCATION_INTERVAL
@@ -234,15 +225,14 @@ class TrackingService : LifecycleService() {
     private fun addPathPoint(location: Location?) {
         location?.let {
             val pos = LatLng(location.latitude, location.longitude)
-            pathPoints.value?.apply {
+            routes.value?.apply {
                 last().add(pos)
-                pathPoints.postValue(this)
+                routes.postValue(this)
             }
         }
     }
 
     private fun startForegroundService() {
-        println("start foreground service")
         startTimer()
         isTracking.postValue(true)
 
@@ -255,19 +245,19 @@ class TrackingService : LifecycleService() {
 
         startForeground(NOTIFICATION_ID, baseNotificationBuilder.build())
 
-        timeRunInSeconds.observe(this, Observer {
+        timeRunInSeconds.observe(this) {
             if (!serviceKilled) {
                 val notification = curNotificationBuilder
                     .setContentText(TrackingUtility.getFormattedStopWatchTime(it * 1000L))
                 notificationManager.notify(NOTIFICATION_ID, notification.build())
             }
-        })
+        }
     }
 
-    private fun addEmptyPolyline() = pathPoints.value?.apply {
+    private fun startNewLeg() = routes.value?.apply {
         add(mutableListOf())
-        pathPoints.postValue(this)
-    } ?: pathPoints.postValue(mutableListOf(mutableListOf()))
+        routes.postValue(this)
+    } ?: routes.postValue(mutableListOf(mutableListOf()))
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(notificationManager: NotificationManager) {
