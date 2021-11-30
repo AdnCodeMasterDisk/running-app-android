@@ -34,9 +34,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
+import com.runningapp.app.service.Polyline
 import com.runningapp.app.service.TrackingService
 import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.theme.custom_color_yellow
@@ -53,12 +53,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private var isTracking: Boolean = false
-private var pathPoints = mutableListOf<LatLng>()
+private var pathPoints = mutableListOf<Polyline>()
 private var map: GoogleMap? = null
 private var curTimeInMillis: Long = 0L
 private lateinit var context: Context
 private var distanceInMeters = 0
-private var wasResumed: Boolean = false
+private var wasResumedOrStarted: Boolean = false
 
 @Composable
 fun RunActivityScreen() {
@@ -74,29 +74,46 @@ fun RunActivityScreen() {
         isTrackingUI.value = isTracking
     })
     TrackingService.pathPoints.observe(LocalLifecycleOwner.current, Observer {
-        // TODO: dlaczego obserwuje size razy??? Napraw!
-        if (it.isNotEmpty() && (pathPoints.isEmpty() || pathPoints.last() != it.last())) {
-            pathPoints.add(it.last())
-            if (pathPoints.size != it.size) {
-                pathPoints.clear()
-                pathPoints.addAll(it)
-                addAllPolylines()
-                distanceInMeters = TrackingUtility.calculatePolylineLength(pathPoints).toInt()
-            } else {
-                if (wasResumed) {
-                    wasResumed = false
+        if (it.isNotEmpty()) {
+            // TODO: Somehow location change observer executes it.last().size times,
+            //  pathPoints.last().last() != it.last().last() prevents adding same LatLng multiple times
+            if (it.last().isNotEmpty() && (pathPoints.isEmpty() || pathPoints.last()
+                    .isEmpty() || pathPoints.last().last() != it.last().last())
+            ) {
+                // If tracking was paused and then resumed start a new list of LatLngs,
+                if (wasResumedOrStarted) {
+                    pathPoints.add(mutableListOf(it.last().last()))
+                    wasResumedOrStarted = false
                 } else {
-                    addLatestPolyline()
+                    // If app was minimized pathPoints.last().size will be different than it.last().size
+                    //  because foreground service is still getting new user locations.
+                    //   Clear existing list and add all observed locations when minimized
+                    if (pathPoints.last().size + 1 != it.last().size) {
+                        pathPoints.last().clear()
+                        pathPoints.last().addAll(it.last())
+                        addAllPolylines()
+                        distanceInMeters = 0
+                        for (polyline in pathPoints) {
+                            distanceInMeters += TrackingUtility.calculatePolylineLength(polyline)
+                                .toInt()
+                        }
+                    }
+                    // Else add latest location to existing list
+                    //  should execute when RunActivityScreen is running
+                    else {
+                        pathPoints.last().add(it.last().last())
+                        addLatestPolyline()
+                    }
                 }
+
+                moveCameraToUser()
+
+                val distanceTemp = ((distanceInMeters / 1000f).toDouble())
+                distance.value =
+                    BigDecimal(distanceTemp).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+
+                caloriesBurned.value = ((distance.value) * 80).toInt()
             }
-
-            moveCameraToUser()
-
-            val distanceTemp = ((distanceInMeters / 1000f).toDouble())
-            distance.value = BigDecimal(distanceTemp).setScale(2, RoundingMode.HALF_EVEN).toDouble()
-
-            caloriesBurned.value = ((distance.value) * 80).toInt()
-
         }
     })
 
@@ -150,7 +167,7 @@ fun RunActivityScreen() {
                     mapView.getMapAsync {
                         map = it
                         map!!.isMyLocationEnabled = true
-                      ///  moveCameraToUser()
+                        ///  moveCameraToUser()
 
                     }
                 }
@@ -189,12 +206,11 @@ fun RunActivityScreen() {
                         tint = Color.White
                     )
                 }
-            }
-            else {
+            } else {
                 Button(
                     onClick = {
                         toggleRun()
-                        wasResumed = true
+                        wasResumedOrStarted = true
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -349,13 +365,14 @@ fun RunActivityScreen() {
                     onClick = {
                         openDialog.value = false
                         toggleRun()
+                        wasResumedOrStarted = true
                     }
                 ) {
                     Text("Start")
                 }
             },
             dismissButton = {
-                }
+            }
         )
     }
 }
@@ -377,10 +394,10 @@ private fun stopRun() {
 
 
 private fun moveCameraToUser() {
-    if (pathPoints.isNotEmpty()) {
+    if (pathPoints.last().isNotEmpty()) {
         map?.animateCamera(
             CameraUpdateFactory.newLatLngZoom(
-                pathPoints.last(),
+                pathPoints.last().last(),
                 MAP_ZOOM
             )
         )
@@ -391,14 +408,14 @@ private fun addAllPolylines() {
     val polylineOptions = PolylineOptions()
         .color(POLYLINE_COLOR)
         .width(POLYLINE_WIDTH)
-        .addAll(pathPoints)
+        .addAll(pathPoints.last())
     map?.addPolyline(polylineOptions)
 }
 
 private fun addLatestPolyline() {
-    if (pathPoints.isNotEmpty() && pathPoints.size > 1) {
-        val preLastLatLng = pathPoints[pathPoints.size - 2]
-        val lastLatLng = pathPoints.last()
+    if (pathPoints.last().isNotEmpty() && pathPoints.last().size > 1) {
+        val preLastLatLng = pathPoints.last()[pathPoints.last().size - 2]
+        val lastLatLng = pathPoints.last().last()
         val polylineOptions = PolylineOptions()
             .color(POLYLINE_COLOR)
             .width(POLYLINE_WIDTH)
@@ -428,10 +445,12 @@ private fun sendCommandToService(action: String) =
 
 private fun zoomToSeeWholeTrack() {
     val bounds = LatLngBounds.Builder()
-    for(pos in pathPoints) {
-        bounds.include(pos)
-    }
 
+    for (polyline in pathPoints) {
+        for (pos in polyline) {
+            bounds.include(pos)
+        }
+    }
     map?.moveCamera(
         CameraUpdateFactory.newLatLngBounds(
             bounds.build(),
