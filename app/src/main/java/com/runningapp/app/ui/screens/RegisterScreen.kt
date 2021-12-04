@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldColors
@@ -34,18 +35,28 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.runningapp.app.data.remote.dto.LoginRequestDTO
+import com.runningapp.app.data.remote.dto.RegisterRequestDTO
+import com.runningapp.app.ui.viewmodel.LoginViewModel
+import com.runningapp.app.ui.viewmodel.RegisterViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier) {
+fun RegisterScreen(
+    modifier: Modifier = Modifier,
+    viewModel: RegisterViewModel = hiltViewModel()) {
     val focusRequester = remember {
         FocusRequester()
     }
     val usernameSate = remember { mutableStateOf("") }
+    val emailSate = remember { mutableStateOf("") }
     val passwordSate = remember { mutableStateOf("") }
     val isVisibility = remember { mutableStateOf(false) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val state = viewModel.state.value
 
     Column(
         modifier
@@ -55,141 +66,145 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Surface(
-            modifier = Modifier.clip(RoundedCornerShape(20.dp)).fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary
-        ) {
-            Row(
-                modifier = Modifier.padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically
+        if(state.isLoading) {
+            CircularProgressIndicator(modifier = Modifier)
+        } else {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(20.dp)).fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Sign up",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = "Hello, create a new account!",
-                        style = MaterialTheme.typography.titleMedium
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Sign up",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Text(
+                            text = "Hello, create a new account!",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Icon(
+                        Icons.Filled.DirectionsRun,
+                        contentDescription = "Runner",
+                        modifier = Modifier.size(48.dp)
                     )
                 }
-                Icon(
-                    Icons.Filled.DirectionsRun,
-                    contentDescription = "Runner",
-                    modifier = Modifier.size(48.dp)
-                )
+
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
+                value = usernameSate.value,
+                onValueChange = {
+                    usernameSate.value = it
+                },
+                shape = RoundedCornerShape(10.dp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                label = {
+                    Text(
+                        "Name",
+                        //style = androidx.compose.material3.MaterialTheme.typography.labelLarge
+                    ) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusRequester.requestFocus()
+                    }
+                )
+            )
+
+            OutlinedTextField(
+                modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
+                value = emailSate.value,
+                onValueChange = {
+                    emailSate.value = it
+                },
+                shape = RoundedCornerShape(10.dp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                label = {
+                    Text(
+                        "Email",
+                        //style = androidx.compose.material3.MaterialTheme.typography.labelLarge
+                    ) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusRequester.requestFocus()
+                    }
+                )
+            )
+
+            OutlinedTextField(
+                modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth().focusRequester(focusRequester),
+                value = passwordSate.value,
+                onValueChange = { passwordSate.value = it },
+                shape = RoundedCornerShape(10.dp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                label = {
+                    Text(
+                        "Password",
+                        // style = androidx.compose.material3.MaterialTheme.typography.labelLarge
+                    ) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                visualTransformation = if (isVisibility.value) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    androidx.compose.material3.IconButton(onClick = { isVisibility.value = !isVisibility.value }) {
+                        Icon(
+                            imageVector = if (isVisibility.value) {
+                                Icons.Filled.Visibility
+                            } else {
+                                Icons.Filled.VisibilityOff
+                            },
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    }
+                },
+
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
+            )
+            val requestBody = RegisterRequestDTO(usernameSate.value, emailSate.value, passwordSate.value)
+            androidx.compose.material3.Button(
+                modifier = Modifier.padding(top = 16.dp),
+                enabled = usernameSate.value.isNotEmpty() && passwordSate.value.isNotEmpty(),
+                onClick = { viewModel.registerUser(requestBody) }) {
+                Text("Register")
+            }
+
+            Spacer(modifier = Modifier.height(36.dp))
+
+            Text(
+                text = "Already have an account? Sign in!",
+                style = MaterialTheme.typography.labelLarge
+            )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
-            value = usernameSate.value,
-            onValueChange = {
-                usernameSate.value = it
-            },
-            shape = RoundedCornerShape(10.dp),
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-            label = {
-                Text(
-                    "Name",
-                    //style = androidx.compose.material3.MaterialTheme.typography.labelLarge
-                ) },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusRequester.requestFocus()
-                }
-            )
-        )
-
-        OutlinedTextField(
-            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
-            value = usernameSate.value,
-            onValueChange = {
-                usernameSate.value = it
-            },
-            shape = RoundedCornerShape(10.dp),
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-            label = {
-                Text(
-                    "Email",
-                    //style = androidx.compose.material3.MaterialTheme.typography.labelLarge
-                ) },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusRequester.requestFocus()
-                }
-            )
-        )
-
-        OutlinedTextField(
-            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth().focusRequester(focusRequester),
-            value = passwordSate.value,
-            onValueChange = { passwordSate.value = it },
-            shape = RoundedCornerShape(10.dp),
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-            label = {
-                Text(
-                    "Password",
-                    // style = androidx.compose.material3.MaterialTheme.typography.labelLarge
-                ) },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            visualTransformation = if (isVisibility.value) {
-                VisualTransformation.None
-            } else {
-                PasswordVisualTransformation()
-            },
-            trailingIcon = {
-                androidx.compose.material3.IconButton(onClick = { isVisibility.value = !isVisibility.value }) {
-                    androidx.compose.material3.Icon(
-                        imageVector = if (isVisibility.value) {
-                            Icons.Filled.Visibility
-                        } else {
-                            Icons.Filled.VisibilityOff
-                        },
-                        contentDescription = null,
-                        tint = Color.Gray
-                    )
-                }
-            },
-
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    keyboardController?.hide()
-                }
-            )
-        )
-        androidx.compose.material3.Button(
-            modifier = Modifier.padding(top = 16.dp),
-            enabled = usernameSate.value.isNotEmpty() && passwordSate.value.isNotEmpty(),
-            onClick = { /*TODO*/ }) {
-            androidx.compose.material3.Text("Register")
-        }
-
-        Spacer(modifier = Modifier.height(36.dp))
-
-        Text(
-            text = "Already have an account? Sign in!",
-            style = MaterialTheme.typography.labelLarge
-        )
     }
 }
 

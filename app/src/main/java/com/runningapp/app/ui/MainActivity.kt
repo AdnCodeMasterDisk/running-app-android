@@ -1,4 +1,4 @@
-package com.runningapp.app
+package com.runningapp.app.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Bundle
@@ -21,7 +21,10 @@ import androidx.navigation.compose.rememberNavController
 import com.runningapp.app.ui.components.RunModeFAB
 import com.runningapp.app.ui.navigation.*
 import com.runningapp.app.ui.theme.RunningAppTheme
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {

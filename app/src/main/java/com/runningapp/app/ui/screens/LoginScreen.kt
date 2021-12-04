@@ -5,9 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Visibility
@@ -34,10 +33,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.runningapp.app.data.remote.dto.LoginRequestDTO
+import com.runningapp.app.ui.viewmodel.LoginViewModel
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = hiltViewModel()) {
     val focusRequester = remember {
         FocusRequester()
     }
@@ -47,6 +52,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val state = viewModel.state.value
     Column(
         modifier
             .fillMaxSize()
@@ -55,9 +61,13 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        if(state.isLoading) {
+            CircularProgressIndicator(modifier = Modifier)
+        } else {
         Surface(
-            modifier = Modifier.clip(RoundedCornerShape(20.dp)).fillMaxWidth(),
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .fillMaxWidth(),
             color = MaterialTheme.colorScheme.primary
         ) {
             Row(
@@ -88,7 +98,9 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth(),
             value = usernameSate.value,
             onValueChange = {
                 usernameSate.value = it
@@ -99,7 +111,8 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 Text(
                     "Username",
                     //style = androidx.compose.material3.MaterialTheme.typography.labelLarge
-                ) },
+                )
+            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -112,7 +125,10 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             )
         )
         OutlinedTextField(
-            modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
             value = passwordSate.value,
             onValueChange = { passwordSate.value = it },
             shape = RoundedCornerShape(10.dp),
@@ -120,8 +136,8 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             label = {
                 Text(
                     "Password",
-                   // style = androidx.compose.material3.MaterialTheme.typography.labelLarge
-                ) },
+                )
+            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
@@ -132,8 +148,10 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 PasswordVisualTransformation()
             },
             trailingIcon = {
-                androidx.compose.material3.IconButton(onClick = { isVisibility.value = !isVisibility.value }) {
-                    androidx.compose.material3.Icon(
+                androidx.compose.material3.IconButton(onClick = {
+                    isVisibility.value = !isVisibility.value
+                }) {
+                    Icon(
                         imageVector = if (isVisibility.value) {
                             Icons.Filled.Visibility
                         } else {
@@ -151,11 +169,14 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 }
             )
         )
+
+        val requestBody = LoginRequestDTO(usernameSate.value, passwordSate.value)
+
         androidx.compose.material3.Button(
             modifier = Modifier.padding(top = 16.dp),
             enabled = usernameSate.value.isNotEmpty() && passwordSate.value.isNotEmpty(),
-            onClick = { /*TODO*/ }) {
-            androidx.compose.material3.Text("Login")
+            onClick = { viewModel.loginUser(requestBody) }) {
+            Text("Login")
         }
 
         Spacer(modifier = Modifier.height(36.dp))
@@ -164,6 +185,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             text = "Don't have an account yet? Sign up!",
             style = MaterialTheme.typography.labelLarge
         )
+        }
     }
 }
 

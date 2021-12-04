@@ -18,8 +18,8 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.location.*
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.maps.model.LatLng
-import com.runningapp.app.MainActivity
 import com.runningapp.app.R
+import com.runningapp.app.ui.MainActivity
 import com.runningapp.app.ui.utils.Constants.ACTION_PAUSE_SERVICE
 import com.runningapp.app.ui.utils.Constants.ACTION_SHOW_TRACKING_FRAGMENT
 import com.runningapp.app.ui.utils.Constants.ACTION_START_OR_RESUME_SERVICE
