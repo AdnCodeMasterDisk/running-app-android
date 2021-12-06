@@ -50,7 +50,7 @@ fun Navigation(navController: NavHostController) {
             SettingsScreen()
         }
         composable(NavigationItem.Login.route) {
-            LoginScreen()
+            LoginScreen(navController)
         }
         composable(NavigationItem.Register.route) {
             RegisterScreen()

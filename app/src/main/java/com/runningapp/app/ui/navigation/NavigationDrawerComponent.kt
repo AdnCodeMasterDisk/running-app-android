@@ -4,33 +4,48 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.runningapp.app.data.UserPreferences
+import com.runningapp.app.ui.viewmodel.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: NavController) {
-    val items = listOf(
+fun Drawer(
+    scope: CoroutineScope,
+    scaffoldState: ScaffoldState,
+    navController: NavController,
+    viewModel: LoginViewModel = hiltViewModel()
+) {
+    val authToken = viewModel.token.observeAsState()
+
+    val itemsWhenLoggedIn = listOf(
         NavigationItem.Home,
         NavigationItem.Profile,
         NavigationItem.Explore,
         NavigationItem.Challenges,
-        NavigationItem.Settings,
+        NavigationItem.Settings
+    )
+    val itemsWhenNotLoggedIn = listOf(
         NavigationItem.Login,
         NavigationItem.Register,
-        NavigationItem.RunMode
     )
     Column(
         modifier = Modifier
@@ -42,11 +57,6 @@ fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: N
             modifier = Modifier.padding(vertical = 18.dp, horizontal = 16.dp),
             style = MaterialTheme.typography.titleMedium
         )
-//        Spacer(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(40.dp)
-//        )
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -56,6 +66,15 @@ fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: N
             style = MaterialTheme.typography.titleSmall
         )
         // List of navigation items
+
+        var items: List<NavigationItem> = listOf()
+
+        items = if (authToken.value != null) {
+            itemsWhenLoggedIn
+        } else {
+            itemsWhenNotLoggedIn
+        }
+
         items.forEach { item ->
             DrawerItem(item = item, selected = currentRoute == item.route, onItemClick = {
                 navController.navigate(item.route) {
@@ -76,6 +95,31 @@ fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: N
                 }
             })
         }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape(100.dp))
+                .fillMaxWidth()
+                .clickable(onClick = {
+                    viewModel.logout()
+                    navController.popBackStack()
+                    navController.navigate("login")
+                    scope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+                })
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Outlined.Logout, contentDescription = "Logout")
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Logout",
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
         Text(
             text = "Running App",

@@ -11,16 +11,23 @@ import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.runningapp.app.ui.viewmodel.LoginViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(
+    navController: NavController,
+    viewModel: LoginViewModel = hiltViewModel()
+) {
 
+    val authToken = viewModel.token.observeAsState()
     val scale = remember {
         Animatable(0f)
     }
@@ -35,11 +42,15 @@ fun SplashScreen(navController: NavController) {
                 }
             )
         )
-        delay(3000L)
-        navController.navigate("home")
+        delay(2000L)
+        if (authToken.value != null) {
+            navController.popBackStack()
+            navController.navigate("home")
+        } else {
+            navController.popBackStack()
+            navController.navigate("login")
+        }
     }
-
-
 
     Box(
         contentAlignment = Alignment.Center,

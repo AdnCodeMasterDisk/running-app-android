@@ -16,6 +16,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -34,15 +37,21 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.asLiveData
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.data.remote.dto.LoginRequestDTO
 import com.runningapp.app.ui.viewmodel.LoginViewModel
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LoginScreen(
+fun LoginScreen (
+    navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = hiltViewModel()) {
+    viewModel: LoginViewModel = hiltViewModel(),
+    ) {
     val focusRequester = remember {
         FocusRequester()
     }
@@ -53,6 +62,10 @@ fun LoginScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val state = viewModel.state.value
+    val authToken = viewModel.token.observeAsState()
+
+    println("Token value on launch: " + authToken.value)
+
     Column(
         modifier
             .fillMaxSize()
@@ -64,127 +77,134 @@ fun LoginScreen(
         if(state.isLoading) {
             CircularProgressIndicator(modifier = Modifier)
         } else {
-        Surface(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary
-        ) {
-            Row(
-                modifier = Modifier.padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Sign in",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = "Hello, let's get started!",
-                        style = MaterialTheme.typography.titleMedium
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Sign in",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Text(
+                            text = "Hello, let's get started!",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Icon(
+                        Icons.Filled.DirectionsRun,
+                        contentDescription = "Runner",
+                        modifier = Modifier.size(48.dp)
                     )
                 }
-                Icon(
-                    Icons.Filled.DirectionsRun,
-                    contentDescription = "Runner",
-                    modifier = Modifier.size(48.dp)
-                )
+
             }
 
-        }
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .fillMaxWidth(),
-            value = usernameSate.value,
-            onValueChange = {
-                usernameSate.value = it
-            },
-            shape = RoundedCornerShape(10.dp),
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-            label = {
-                Text(
-                    "Username",
-                    //style = androidx.compose.material3.MaterialTheme.typography.labelLarge
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusRequester.requestFocus()
-                }
-            )
-        )
-        OutlinedTextField(
-            modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .fillMaxWidth()
-                .focusRequester(focusRequester),
-            value = passwordSate.value,
-            onValueChange = { passwordSate.value = it },
-            shape = RoundedCornerShape(10.dp),
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-            label = {
-                Text(
-                    "Password",
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            visualTransformation = if (isVisibility.value) {
-                VisualTransformation.None
-            } else {
-                PasswordVisualTransformation()
-            },
-            trailingIcon = {
-                androidx.compose.material3.IconButton(onClick = {
-                    isVisibility.value = !isVisibility.value
-                }) {
-                    Icon(
-                        imageVector = if (isVisibility.value) {
-                            Icons.Filled.Visibility
-                        } else {
-                            Icons.Filled.VisibilityOff
-                        },
-                        contentDescription = null,
-                        tint = Color.Gray
+            OutlinedTextField(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .fillMaxWidth(),
+                value = usernameSate.value,
+                onValueChange = {
+                    usernameSate.value = it
+                },
+                shape = RoundedCornerShape(10.dp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                label = {
+                    Text(
+                        "Username"
                     )
-                }
-            },
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
 
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    keyboardController?.hide()
-                }
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusRequester.requestFocus()
+                    }
+                )
             )
-        )
+            OutlinedTextField(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
+                value = passwordSate.value,
+                onValueChange = { passwordSate.value = it },
+                shape = RoundedCornerShape(10.dp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                label = {
+                    Text(
+                        "Password",
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                visualTransformation = if (isVisibility.value) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    androidx.compose.material3.IconButton(onClick = {
+                        isVisibility.value = !isVisibility.value
+                    }) {
+                        Icon(
+                            imageVector = if (isVisibility.value) {
+                                Icons.Filled.Visibility
+                            } else {
+                                Icons.Filled.VisibilityOff
+                            },
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    }
+                },
 
-        val requestBody = LoginRequestDTO(usernameSate.value, passwordSate.value)
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
+            )
 
-        androidx.compose.material3.Button(
-            modifier = Modifier.padding(top = 16.dp),
-            enabled = usernameSate.value.isNotEmpty() && passwordSate.value.isNotEmpty(),
-            onClick = { viewModel.loginUser(requestBody) }) {
-            Text("Login")
+            val requestBody = LoginRequestDTO(usernameSate.value, passwordSate.value)
+
+            androidx.compose.material3.Button(
+                modifier = Modifier.padding(top = 16.dp),
+                enabled = usernameSate.value.isNotEmpty() && passwordSate.value.isNotEmpty(),
+                onClick = { viewModel.loginUser(requestBody) }) {
+                Text("Login")
+            }
+
+            Spacer(modifier = Modifier.height(36.dp))
+
+            Text(
+                text = "Don't have an account yet? Sign up!",
+                style = MaterialTheme.typography.labelLarge
+            )
         }
-
-        Spacer(modifier = Modifier.height(36.dp))
-
-        Text(
-            text = "Don't have an account yet? Sign up!",
-            style = MaterialTheme.typography.labelLarge
-        )
+        if (state.user != null) {
+          //  viewModel.saveAuthToken(state.user.token)
+            LaunchedEffect(true) {
+                navController.popBackStack()
+                navController.navigate("home")
+            }
+      //      println("USer logged with token: " + authToken.value)
         }
     }
 }
@@ -192,5 +212,6 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen()
+    val navController = rememberNavController()
+    LoginScreen(navController)
 }
