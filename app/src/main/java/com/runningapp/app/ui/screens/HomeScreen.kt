@@ -7,6 +7,7 @@ import android.location.Location
 import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +30,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.runningapp.app.R
 import com.runningapp.app.service.TrackingService
 import com.runningapp.app.ui.components.MonthlyGoalComponent
 import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
@@ -94,11 +97,19 @@ fun HomeScreen(navHostController: NavHostController) {
                         .clip(RoundedCornerShape(40.dp))
                         .height(350.dp)
                 ) {
+                    val dark = isSystemInDarkTheme()
                     val mapViewWithLifecycle = rememberMapViewWithLifecycle()
                     AndroidView(factory = { mapViewWithLifecycle }) { mapView ->
                         mapView.getMapAsync {
                             map = it
                             map!!.isMyLocationEnabled = true
+                            if (dark) {
+                                map!!.setMapStyle(
+                                    MapStyleOptions.loadRawResourceStyle(
+                                        context, R.raw.style_json
+                                    )
+                                )
+                            }
                         }
                     }
                 }
