@@ -50,7 +50,10 @@ fun MyApp() {
         drawerGesturesEnabled = false,
 
         topBar = {
-            if (navController.currentRoute() != "runMode" && navController.currentRoute() != "splash") {
+            if (navController.currentRoute() != "runMode"
+                && navController.currentRoute() != "login"
+                && navController.currentRoute() != "register"
+                && navController.currentRoute() != "splash") {
                 val topBarText = when (navController.currentRoute()) {
                     "home" -> "Hello Adam!"
                     "profile" -> "Your profile"
@@ -63,7 +66,11 @@ fun MyApp() {
             }
         },
         floatingActionButton = {
-            if (navController.currentRoute() != "runMode" && navController.currentRoute() != "home" && navController.currentRoute() != "splash") {
+            if (navController.currentRoute() != "runMode"
+                && navController.currentRoute() != "login"
+                && navController.currentRoute() != "register"
+                && navController.currentRoute() != "home"
+                && navController.currentRoute() != "splash") {
                 RunModeFAB()
             }
         },
@@ -71,7 +78,10 @@ fun MyApp() {
             Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController)
         },
         bottomBar = {
-            if (navController.currentRoute() != "runMode" && navController.currentRoute() != "splash") {
+            if (navController.currentRoute() != "runMode"
+                && navController.currentRoute() != "login"
+                && navController.currentRoute() != "register"
+                && navController.currentRoute() != "splash") {
                 BottomNavigationBar(navController)
             }
         },

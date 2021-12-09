@@ -5,10 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Visibility
@@ -36,6 +33,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.runningapp.app.data.remote.dto.LoginRequestDTO
 import com.runningapp.app.data.remote.dto.RegisterRequestDTO
 import com.runningapp.app.ui.viewmodel.LoginViewModel
@@ -44,6 +43,7 @@ import com.runningapp.app.ui.viewmodel.RegisterViewModel
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RegisterScreen(
+    navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = hiltViewModel()) {
     val focusRequester = remember {
@@ -199,11 +199,17 @@ fun RegisterScreen(
             }
 
             Spacer(modifier = Modifier.height(36.dp))
-
-            Text(
-                text = "Already have an account? Sign in!",
-                style = MaterialTheme.typography.labelLarge
-            )
+            TextButton(
+                onClick = {
+                    navController.popBackStack()
+                    navController.navigate("login")
+                })
+            {
+                Text(
+                    text = "Already have an account? Sign in!",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     }
 }
@@ -211,5 +217,6 @@ fun RegisterScreen(
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen()
+    val navController = rememberNavController()
+    RegisterScreen(navController)
 }

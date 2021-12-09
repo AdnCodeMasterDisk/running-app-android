@@ -3,12 +3,11 @@ package com.runningapp.app.ui.screens
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -60,6 +59,11 @@ fun SplashScreen(
            Icons.Filled.DirectionsRun,
            contentDescription = "Run logo",
            modifier = Modifier.size(72.dp)
+        )
+        Spacer(modifier = Modifier.height(36.dp))
+        Text(
+            text = "Running app",
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 36.dp)
         )
     }
 }

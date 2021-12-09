@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Visibility
@@ -42,6 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.data.remote.dto.LoginRequestDTO
+import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.viewmodel.LoginViewModel
 
 
@@ -109,6 +111,19 @@ fun LoginScreen (
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            if (state.error != "") {
+                var errorText = state.error
+                if (state.error.contains("HTTP")) {
+                    errorText = "Incorrect user data"
+                }
+                Text(
+                    text = errorText,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = custom_color_red
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             OutlinedTextField(
                 modifier = Modifier
@@ -193,11 +208,19 @@ fun LoginScreen (
 
             Spacer(modifier = Modifier.height(36.dp))
 
-            Text(
-                text = "Don't have an account yet? Sign up!",
-                style = MaterialTheme.typography.labelLarge
-            )
+            TextButton(
+                onClick = {
+                    navController.popBackStack()
+                    navController.navigate("register")
+                })
+             {
+                Text(
+                    text = "Don't have an account yet? Sign up!",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
+
         if (state.user != null) {
           //  viewModel.saveAuthToken(state.user.token)
             LaunchedEffect(true) {
