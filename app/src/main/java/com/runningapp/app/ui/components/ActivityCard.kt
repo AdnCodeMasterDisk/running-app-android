@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tour
@@ -26,12 +27,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.runningapp.app.R
+import com.runningapp.app.domain.model.Run
 import com.runningapp.app.ui.screens.ExploreScreen
 import com.runningapp.app.ui.utils.SimpleListDataItem
 
 
 @Composable
-fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
+fun ActivityCard(
+    run: Run
+) {
     val expanded = remember { mutableStateOf(false) }
     val liked = remember { mutableStateOf(false) }
     val extraPadding by animateDpAsState(
@@ -61,13 +65,13 @@ fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
                     Column(modifier = Modifier.padding(horizontal = 8.dp)) {
                         Row {
                             Text(
-                                text = "24 Oct 2021",
+                                text = run.date,
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }
                         Row {
                             Text(
-                                text = simpleListDataItem.text,
+                                text = "TO DO",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
@@ -103,7 +107,7 @@ fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
                         contentDescription = "Distance"
                     )
                     Text(
-                        text = "15.65 km",
+                        text = run.distance.toString(),
 //                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(start = 4.dp)
                     )
@@ -115,7 +119,7 @@ fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
                         contentDescription = "Total time"
                     )
                     Text(
-                        text = "1:00:23",
+                        text = run.totalTime,
 //                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(start = 4.dp)
                     )
@@ -123,11 +127,11 @@ fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Outlined.LocationOn,
-                        contentDescription = "Location"
+                        imageVector = Icons.Outlined.DirectionsRun,
+                        contentDescription = "Avg Pace"
                     )
                     Text(
-                        text = "Warsaw",
+                        text = run.pace,
 //                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(start = 4.dp)
                     )
@@ -167,5 +171,5 @@ fun ActivityCard(simpleListDataItem: SimpleListDataItem) {
 @Preview(showBackground = true)
 @Composable
 fun ActivityCardPreview() {
-    ActivityCard(SimpleListDataItem("Username"))
+   // ActivityCard()
 }

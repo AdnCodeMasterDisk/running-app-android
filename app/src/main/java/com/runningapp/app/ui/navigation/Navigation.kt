@@ -41,7 +41,7 @@ fun Navigation(navController: NavHostController) {
             ProfileScreen(modifier = Modifier.fillMaxSize(), dataItems2)
         }
         composable(NavigationItem.Explore.route) {
-            ExploreScreen(modifier = Modifier.fillMaxSize(), dataItems)
+            ExploreScreen(modifier = Modifier.fillMaxSize())
         }
         composable(NavigationItem.Challenges.route) {
             ChallengesScreen(dataItems2)

@@ -2,13 +2,12 @@ package com.runningapp.app.ui.screens
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -31,15 +30,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.gson.Gson
+import com.runningapp.app.data.remote.dto.SaveRunRequestDTO
 import com.runningapp.app.service.Leg
 import com.runningapp.app.service.TrackingService
+import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
+import com.runningapp.app.ui.theme.custom_color_green
 import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.theme.custom_color_yellow
 import com.runningapp.app.ui.utils.Constants.ACTION_PAUSE_SERVICE
@@ -49,10 +52,15 @@ import com.runningapp.app.ui.utils.Constants.MAP_ZOOM
 import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR
 import com.runningapp.app.ui.utils.Constants.POLYLINE_WIDTH
 import com.runningapp.app.ui.utils.TrackingUtility
-import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
-import com.runningapp.app.ui.theme.custom_color_green
+import com.runningapp.app.ui.viewmodel.RunActivityViewModel
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.*
 import java.math.BigDecimal
 import java.math.RoundingMode
+
 
 private var isTracking: Boolean = false
 private var pathPoints = mutableListOf<Leg>()
@@ -63,7 +71,10 @@ private var distanceInMeters = 0
 private var wasResumedOrStarted: Boolean = false
 
 @Composable
-fun RunActivityScreen(navController: NavHostController) {
+fun RunActivityScreen(
+    navController: NavHostController,
+    viewModel: RunActivityViewModel = hiltViewModel()
+) {
     val totalTime = remember { mutableStateOf("00:00:00:00") }
     val distance = remember { mutableStateOf(0.0) }
     val avgSpeed = remember { mutableStateOf(0.0) }
@@ -176,7 +187,7 @@ fun RunActivityScreen(navController: NavHostController) {
             }
 
             Button(
-                onClick = { stopRun() },
+                onClick = { endRunAndSaveToDb(viewModel, totalTime.value, caloriesBurned.value, distanceInMeters, pace.value, avgSpeed.value.toFloat()) },
                 modifier = Modifier
                     .padding(bottom = 12.dp)
                     .align(Alignment.BottomStart)
@@ -460,6 +471,44 @@ private fun zoomToSeeWholeTrack() {
     )
 }
 
+private fun endRunAndSaveToDb(viewModel: RunActivityViewModel, totalTime: String, calories: Int, distanceInMeters: Int, pace : String, speed: Float) {
+    map?.snapshot { bmp ->
+        val runData = SaveRunRequestDTO(2, totalTime, calories, distanceInMeters, pace, speed)
+        val data = bitmapToMultipart(bmp)
+        val jsonBody = Gson().toJson(runData)
+       // val requestBody = jsonBody.toRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val requestBody = MultipartBody.Part.createFormData("requestBody", jsonBody)
+
+        if (data != null) {
+            viewModel.saveRun(data, requestBody)
+        }
+
+        stopRun()
+    }
+}
+fun bitmapToMultipart(imageBitmap: Bitmap?): MultipartBody.Part? {
+    var file: File? = null
+    try {
+        //create a file to write bitmap data
+        file = File(context.cacheDir, "imageBitmap")
+        file.createNewFile()
+
+        //Convert bitmap to byte array
+        val bos = ByteArrayOutputStream()
+        imageBitmap?.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos)
+        val bitmapdata = bos.toByteArray()
+
+        //write the bytes in file
+        val fos = FileOutputStream(file)
+        fos.write(bitmapdata)
+        fos.flush()
+        fos.close()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    val reqFile = file?.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+    return reqFile?.let { MultipartBody.Part.createFormData("mapFile", file!!.name, it) }
+}
 @Preview(showBackground = true)
 @Composable
 fun RunActivityScreenPreview() {

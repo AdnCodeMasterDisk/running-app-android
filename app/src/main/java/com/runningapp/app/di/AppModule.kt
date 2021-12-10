@@ -4,7 +4,9 @@ import android.content.Context
 import com.runningapp.app.common.Constants
 import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.data.remote.RunningAppServerApi
+import com.runningapp.app.data.repository.RunRepositoryImpl
 import com.runningapp.app.data.repository.UserRepositoryImpl
+import com.runningapp.app.domain.repository.RunRepository
 import com.runningapp.app.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -34,6 +36,12 @@ object AppModule {
     @Singleton
     fun provideUserRepository(api: RunningAppServerApi): UserRepository {
         return UserRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRunRepository(api: RunningAppServerApi): RunRepository {
+        return RunRepositoryImpl(api)
     }
 
     @Provides

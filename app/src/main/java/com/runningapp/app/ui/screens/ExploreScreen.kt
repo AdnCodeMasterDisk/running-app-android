@@ -1,28 +1,56 @@
 package com.runningapp.app.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.runningapp.app.ui.utils.SimpleListDataItem
 import com.runningapp.app.ui.components.ActivityCard
 import com.runningapp.app.ui.components.RecommendedChallengeCard
+import com.runningapp.app.ui.theme.custom_color_red
+import com.runningapp.app.ui.viewmodel.RunListViewModel
 
 @Composable
-fun ExploreScreen(modifier: Modifier = Modifier, simpleListDataItems: List<SimpleListDataItem>) {
+fun ExploreScreen(
+    modifier: Modifier = Modifier,
+    viewModel: RunListViewModel = hiltViewModel()
+) {
     Surface(color = MaterialTheme.colorScheme.background) {
         Column {
             RecommendedChallengeCard(name = "Complete a 10 km run")
-            LazyColumn(modifier = modifier) {
-                items(simpleListDataItems) { data ->
-                    ActivityCard(simpleListDataItem = data)
+            val state = viewModel.state.value
+            if(state.isLoading) {
+                CircularProgressIndicator()
+            }
+            if (state.runs.isNotEmpty()) {
+                LazyColumn(modifier = modifier) {
+                    items(state.runs) { run ->
+                        ActivityCard(run = run)
+                    }
                 }
+            }
+            if(state.error.isNotBlank()) {
+                Text(
+                    text = state.error,
+                    color = custom_color_red,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
             }
         }
     }
@@ -31,6 +59,5 @@ fun ExploreScreen(modifier: Modifier = Modifier, simpleListDataItems: List<Simpl
 @Preview(showBackground = true)
 @Composable
 fun ExploreScreenPreview() {
-    val dataItems = (0..10).map { SimpleListDataItem("Username") }
-    ExploreScreen(modifier = Modifier.fillMaxSize(), dataItems)
+    ExploreScreen(modifier = Modifier.fillMaxSize())
 }
