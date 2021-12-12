@@ -1,6 +1,6 @@
 package com.runningapp.app.data.remote.dto
 
-data class SaveRunRequestDTO (
+data class SaveRunRequest (
     val userId: Long,
     val totalTime: String,
     val calories: Int,

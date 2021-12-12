@@ -1,6 +1,6 @@
 package com.runningapp.app.data.remote.dto
 
-data class LoginRequestDTO (
+data class LoginRequest (
     val username: String,
     val plainPassword: String
 )

@@ -35,9 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.runningapp.app.data.remote.dto.LoginRequestDTO
-import com.runningapp.app.data.remote.dto.RegisterRequestDTO
-import com.runningapp.app.ui.viewmodel.LoginViewModel
+import com.runningapp.app.data.remote.dto.RegisterRequest
 import com.runningapp.app.ui.viewmodel.RegisterViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -190,7 +188,7 @@ fun RegisterScreen(
                     }
                 )
             )
-            val requestBody = RegisterRequestDTO(usernameSate.value, emailSate.value, passwordSate.value)
+            val requestBody = RegisterRequest(usernameSate.value, emailSate.value, passwordSate.value)
             androidx.compose.material3.Button(
                 modifier = Modifier.padding(top = 16.dp),
                 enabled = usernameSate.value.isNotEmpty() && passwordSate.value.isNotEmpty(),

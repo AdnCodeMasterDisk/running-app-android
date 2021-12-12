@@ -1,6 +1,6 @@
 package com.runningapp.app.ui.viewmodel
 
-import com.runningapp.app.data.remote.dto.RegisterRequestDTO
+import com.runningapp.app.data.remote.dto.RegisterRequest
 import com.runningapp.app.domain.use_case.RegisterUserUseCase
 import com.runningapp.app.ui.utils.RegisterState
 import androidx.compose.runtime.State
@@ -21,7 +21,7 @@ class RegisterViewModel @Inject constructor(
     private val _state = mutableStateOf(RegisterState())
     val state: State<RegisterState> = _state
 
-    fun registerUser(requestBody: RegisterRequestDTO) {
+    fun registerUser(requestBody: RegisterRequest) {
         registerUserUseCase(requestBody).onEach { result ->
             when (result) {
                 is Resource.Success -> {

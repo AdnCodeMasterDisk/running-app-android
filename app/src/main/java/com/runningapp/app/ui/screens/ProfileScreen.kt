@@ -2,46 +2,117 @@ package com.runningapp.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.runningapp.app.ui.components.ChallengeTile
-import com.runningapp.app.ui.components.MonthlyGoalComponent
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.runningapp.app.ui.components.*
+import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.utils.SimpleListDataItem
+import com.runningapp.app.ui.viewmodel.RunListViewModel
+import com.runningapp.app.ui.viewmodel.UserRunListViewModel
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier, simpleListDataItems: List<SimpleListDataItem>) {
-    Column(
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    simpleListDataItems: List<SimpleListDataItem>,
+    viewModel: UserRunListViewModel = hiltViewModel()
+) {
+    val expanded = remember { mutableStateOf(false) }
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        MonthlyGoalComponent()
-        Box(
-            modifier = Modifier
-                .padding(12.dp)
-                .height(250.dp)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(12.dp),
-        ) {
-            Text("To do chart")
+        item {
+            MonthlyGoalComponent()
         }
-        Text(
-            text = "Challenges",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)
-        )
-        LazyRow(modifier = modifier) {
-            items(simpleListDataItems) { data ->
-                ChallengeTile(simpleListDataItem = data)
+        item {
+            val userId = viewModel.userId.observeAsState()
+
+            LaunchedEffect(key1 = true) {
+                userId.value?.let { viewModel.getAllUserRunActivities(it) }
+            }
+            Text(
+                text = "Challenges",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)
+            )
+            LazyRow(modifier = Modifier.fillMaxWidth()) {
+                items(simpleListDataItems) { data ->
+                    ChallengeTile(simpleListDataItem = data)
+                }
+            }
+            val state = viewModel.state.value
+
+            Text(
+                text = "Last trainings",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)
+            )
+
+            if (state.isLoading) {
+                ShimmerAnimation()
+            }
+
+            if (expanded.value) {
+                if (state.runs.isNotEmpty()) {
+                    LazyColumn(modifier = Modifier.fillParentMaxHeight()) {
+                        items(state.runs) { run ->
+                            UserTrainingActivityCard(runActivity = run)
+                        }
+                    }
+                }
+            } else {
+                if (state.runs.isNotEmpty()) {
+                    UserTrainingActivityCard(runActivity = state.runs[0])
+                }
+            }
+            IconButton(
+                onClick = { expanded.value = !expanded.value },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = if (expanded.value) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = if (expanded.value) {
+                        "Show less"
+                    } else {
+                        "Show more"
+                    },
+                )
+            }
+            if (state.error.isNotBlank()) {
+                Text(
+                    text = state.error,
+                    color = custom_color_red,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
             }
         }
+
+
     }
 }
 
@@ -49,6 +120,6 @@ fun ProfileScreen(modifier: Modifier = Modifier, simpleListDataItems: List<Simpl
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
-    val dataItems = (0..10).map { SimpleListDataItem("30 km in October") }
-    ProfileScreen(modifier = Modifier.fillMaxSize(), dataItems)
+    //val dataItems = (0..10).map { SimpleListDataItem("30 km in October") }
+    //ProfileScreen(modifier = Modifier.fillMaxSize(), dataItems)
 }

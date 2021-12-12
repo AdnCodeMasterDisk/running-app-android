@@ -2,11 +2,10 @@ package com.runningapp.app.ui.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.*
 import com.runningapp.app.common.Resource
 import com.runningapp.app.data.UserPreferences
-import com.runningapp.app.data.remote.dto.LoginRequestDTO
+import com.runningapp.app.data.remote.dto.LoginRequest
 import com.runningapp.app.domain.use_case.LoginUserUseCase
 import com.runningapp.app.ui.utils.LoginState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,13 +23,15 @@ class LoginViewModel @Inject constructor(
     private val _state = mutableStateOf(LoginState())
     val state: State<LoginState> = _state
     var token: LiveData<String?> = userPreferences.authToken.asLiveData()
+    private var loggedUserId: LiveData<Int?> = userPreferences.userId.asLiveData()
 
-    fun loginUser(requestBody: LoginRequestDTO) {
+    fun loginUser(requestBody: LoginRequest) {
         loginUserUseCase(requestBody).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _state.value = LoginState(user = result.data)
-                    _state.value.user?.let { saveAuthToken(it.token) }
+                    _state.value = LoginState(loginResponse = result.data)
+                    _state.value.loginResponse?.let { saveAuthToken(it.token) }
+                    _state.value.loginResponse?.let { saveUserId(it.id) }
                 }
                 is Resource.Error -> {
                     _state.value = LoginState(
@@ -44,10 +45,17 @@ class LoginViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun saveAuthToken(authToken: String){
+    private fun saveAuthToken(authToken: String){
         viewModelScope.launch {
             userPreferences.saveAuthToken(authToken)
             token = userPreferences.authToken.asLiveData()
+        }
+    }
+
+    private fun saveUserId(userId: Int){
+        viewModelScope.launch {
+            userPreferences.saveUserId(userId)
+            loggedUserId = userPreferences.userId.asLiveData()
         }
     }
 

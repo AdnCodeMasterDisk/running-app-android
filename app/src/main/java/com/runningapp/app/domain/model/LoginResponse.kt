@@ -1,6 +1,6 @@
 package com.runningapp.app.domain.model
 
-data class User(
+data class LoginResponse(
     val id: Int,
     val username: String,
     val email: String,

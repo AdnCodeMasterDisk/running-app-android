@@ -38,7 +38,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.gson.Gson
-import com.runningapp.app.data.remote.dto.SaveRunRequestDTO
+import com.runningapp.app.data.remote.dto.SaveRunRequest
 import com.runningapp.app.service.Leg
 import com.runningapp.app.service.TrackingService
 import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
@@ -56,7 +56,6 @@ import com.runningapp.app.ui.viewmodel.RunActivityViewModel
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.*
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -187,7 +186,16 @@ fun RunActivityScreen(
             }
 
             Button(
-                onClick = { endRunAndSaveToDb(viewModel, totalTime.value, caloriesBurned.value, distanceInMeters, pace.value, avgSpeed.value.toFloat()) },
+                onClick = {
+                    endRunAndSaveToDb(
+                        viewModel,
+                        totalTime.value,
+                        caloriesBurned.value,
+                        distanceInMeters,
+                        pace.value,
+                        avgSpeed.value.toFloat()
+                    )
+                },
                 modifier = Modifier
                     .padding(bottom = 12.dp)
                     .align(Alignment.BottomStart)
@@ -399,7 +407,6 @@ private fun startRun() {
 }
 
 private fun stopRun() {
-    zoomToSeeWholeTrack()
     sendCommandToService(ACTION_STOP_SERVICE)
 }
 
@@ -473,16 +480,15 @@ private fun zoomToSeeWholeTrack() {
 
 private fun endRunAndSaveToDb(viewModel: RunActivityViewModel, totalTime: String, calories: Int, distanceInMeters: Int, pace : String, speed: Float) {
     map?.snapshot { bmp ->
-        val runData = SaveRunRequestDTO(2, totalTime, calories, distanceInMeters, pace, speed)
+        zoomToSeeWholeTrack()
+        val runData = SaveRunRequest(2, totalTime, calories, distanceInMeters, pace, speed)
         val data = bitmapToMultipart(bmp)
         val jsonBody = Gson().toJson(runData)
-       // val requestBody = jsonBody.toRequestBody("multipart/form-data".toMediaTypeOrNull())
         val requestBody = MultipartBody.Part.createFormData("requestBody", jsonBody)
 
         if (data != null) {
             viewModel.saveRun(data, requestBody)
         }
-
         stopRun()
     }
 }
@@ -495,7 +501,7 @@ fun bitmapToMultipart(imageBitmap: Bitmap?): MultipartBody.Part? {
 
         //Convert bitmap to byte array
         val bos = ByteArrayOutputStream()
-        imageBitmap?.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos)
+        imageBitmap?.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos)
         val bitmapdata = bos.toByteArray()
 
         //write the bytes in file

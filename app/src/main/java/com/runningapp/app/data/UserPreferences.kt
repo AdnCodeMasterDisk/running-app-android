@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.*
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +19,7 @@ class UserPreferences @Inject constructor(
     companion object {
         val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_data")
         private val KEY_AUTH = stringPreferencesKey(name = "key_auth")
+        private val KEY_USERID = intPreferencesKey(name = "key_userid")
     }
 
 
@@ -26,10 +28,21 @@ class UserPreferences @Inject constructor(
             preferences[KEY_AUTH]
         }
 
+    val userId: Flow<Int?>
+        get() = context.dataStore.data.map { preferences ->
+            preferences[KEY_USERID]
+        }
+
 
     suspend fun saveAuthToken(authToken: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_AUTH] = authToken
+        }
+    }
+
+    suspend fun saveUserId(userId: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_USERID] = userId
         }
     }
 

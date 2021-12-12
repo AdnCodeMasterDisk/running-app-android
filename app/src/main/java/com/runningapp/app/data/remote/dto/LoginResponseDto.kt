@@ -1,8 +1,8 @@
 package com.runningapp.app.data.remote.dto
 
-import com.runningapp.app.domain.model.User
+import com.runningapp.app.domain.model.LoginResponse
 
-data class UserDTO(
+data class LoginResponseDto(
     val email: String,
     val id: Int,
     val token: String,
@@ -10,8 +10,8 @@ data class UserDTO(
     val username: String
 )
 
-fun UserDTO.toUser(): User {
-    return User(
+fun LoginResponseDto.toLoginResponse(): LoginResponse {
+    return LoginResponse(
         id = id,
         username = username,
         email = email,

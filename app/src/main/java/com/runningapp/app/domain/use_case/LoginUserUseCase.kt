@@ -1,11 +1,10 @@
 package com.runningapp.app.domain.use_case
 
-import com.google.gson.JsonObject
 import com.runningapp.app.common.Resource
-import com.runningapp.app.data.remote.dto.LoginRequestDTO
-import com.runningapp.app.data.remote.dto.toUser
-import com.runningapp.app.domain.model.User
-import com.runningapp.app.domain.repository.UserRepository
+import com.runningapp.app.data.remote.dto.LoginRequest
+import com.runningapp.app.data.remote.dto.toLoginResponse
+import com.runningapp.app.domain.model.LoginResponse
+import com.runningapp.app.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -13,12 +12,12 @@ import java.io.IOException
 import javax.inject.Inject
 
 class LoginUserUseCase @Inject constructor(
-    private val repository: UserRepository
+    private val repository: AuthRepository
 ) {
-    operator fun invoke(requestBody: LoginRequestDTO): Flow<Resource<User>> = flow {
+    operator fun invoke(requestBody: LoginRequest): Flow<Resource<LoginResponse>> = flow {
         try {
             emit(Resource.Loading())
-            val user = repository.loginUser(requestBody).toUser()
+            val user = repository.loginUser(requestBody).toLoginResponse()
             emit(Resource.Success(user))
         } catch(e: HttpException) {
             emit(Resource.Error(e.localizedMessage ?: "An unexpected error occured"))

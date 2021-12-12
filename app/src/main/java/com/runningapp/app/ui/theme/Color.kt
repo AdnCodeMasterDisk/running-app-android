@@ -6,6 +6,11 @@ val custom_color_red = Color(0xFFD34646)
 val custom_color_blue = Color(0xFF01BAEF)
 val custom_color_green = Color(0xFF32B630)
 
+val ShimmerColorShades = listOf(
+    Color.LightGray.copy(0.5f),
+    Color.LightGray.copy(0.1f),
+    Color.LightGray.copy(0.5f)
+)
 
 val md_theme_light_primary = Color(0xFF6750A4)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)

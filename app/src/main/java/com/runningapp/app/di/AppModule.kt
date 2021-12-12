@@ -5,13 +5,12 @@ import com.runningapp.app.common.Constants
 import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.data.remote.RunningAppServerApi
 import com.runningapp.app.data.repository.RunRepositoryImpl
-import com.runningapp.app.data.repository.UserRepositoryImpl
+import com.runningapp.app.data.repository.AuthRepositoryImpl
 import com.runningapp.app.domain.repository.RunRepository
-import com.runningapp.app.domain.repository.UserRepository
+import com.runningapp.app.domain.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
@@ -34,8 +33,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(api: RunningAppServerApi): UserRepository {
-        return UserRepositoryImpl(api)
+    fun provideUserRepository(api: RunningAppServerApi): AuthRepository {
+        return AuthRepositoryImpl(api)
     }
 
     @Provides

@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -38,11 +37,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.runningapp.app.data.UserPreferences
-import com.runningapp.app.data.remote.dto.LoginRequestDTO
+import com.runningapp.app.data.remote.dto.LoginRequest
 import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.viewmodel.LoginViewModel
 
@@ -65,8 +62,6 @@ fun LoginScreen (
 
     val state = viewModel.state.value
     val authToken = viewModel.token.observeAsState()
-
-    println("Token value on launch: " + authToken.value)
 
     Column(
         modifier
@@ -197,7 +192,7 @@ fun LoginScreen (
                 )
             )
 
-            val requestBody = LoginRequestDTO(usernameSate.value, passwordSate.value)
+            val requestBody = LoginRequest(usernameSate.value, passwordSate.value)
 
             androidx.compose.material3.Button(
                 modifier = Modifier.padding(top = 16.dp),
@@ -221,7 +216,7 @@ fun LoginScreen (
             }
         }
 
-        if (state.user != null) {
+        if (state.loginResponse != null) {
           //  viewModel.saveAuthToken(state.user.token)
             LaunchedEffect(true) {
                 navController.popBackStack()
