@@ -46,6 +46,11 @@ interface RunningAppServerApi {
 
     @GET("likes/user/{userId}")
     suspend fun getUserLikedPosts(@Path("userId") userId: Int): List<LikesDto>
+
+    @GET("get-monthly-distance/user/{userId}")
+    suspend fun getUserMonthlyDistance(@Path("userId") userId: Int): Long
 }
+
+
 
 

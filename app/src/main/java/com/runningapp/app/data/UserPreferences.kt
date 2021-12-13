@@ -20,8 +20,8 @@ class UserPreferences @Inject constructor(
         val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_data")
         private val KEY_AUTH = stringPreferencesKey(name = "key_auth")
         private val KEY_USERID = intPreferencesKey(name = "key_userid")
+        private val KEY_MONTHLY_GOAL = intPreferencesKey(name = "key_monthly_goal")
     }
-
 
     val authToken: Flow<String?>
         get() = context.dataStore.data.map { preferences ->
@@ -33,6 +33,10 @@ class UserPreferences @Inject constructor(
             preferences[KEY_USERID]
         }
 
+    val monthlyGoal: Flow<Int?>
+        get() = context.dataStore.data.map { preferences ->
+            preferences[KEY_MONTHLY_GOAL]
+        }
 
     suspend fun saveAuthToken(authToken: String) {
         context.dataStore.edit { preferences ->
@@ -43,6 +47,12 @@ class UserPreferences @Inject constructor(
     suspend fun saveUserId(userId: Int) {
         context.dataStore.edit { preferences ->
             preferences[KEY_USERID] = userId
+        }
+    }
+
+    suspend fun saveMonthlyGoal(monthlyGoal: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_MONTHLY_GOAL] = monthlyGoal
         }
     }
 

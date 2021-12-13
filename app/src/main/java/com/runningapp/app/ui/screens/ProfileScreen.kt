@@ -1,5 +1,7 @@
 package com.runningapp.app.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,19 +9,20 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,7 +33,9 @@ import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.utils.SimpleListDataItem
 import com.runningapp.app.ui.viewmodel.RunListViewModel
 import com.runningapp.app.ui.viewmodel.UserRunListViewModel
+import kotlin.math.roundToInt
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
@@ -38,14 +43,22 @@ fun ProfileScreen(
     viewModel: UserRunListViewModel = hiltViewModel()
 ) {
     val expanded = remember { mutableStateOf(false) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
         item {
-            MonthlyGoalComponent()
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                MonthlyGoalComponent()
+            }
         }
+
         item {
             val userId = viewModel.userId.observeAsState()
 
@@ -71,7 +84,7 @@ fun ProfileScreen(
             )
 
             if (state.isLoading) {
-                ShimmerAnimation()
+                ShimmerAnimation("activity")
             }
 
             if (expanded.value) {
@@ -101,8 +114,10 @@ fun ProfileScreen(
                 )
             }
             if (state.error.isNotBlank()) {
+                val errorMsg = if (state.error == "HTTP 404 ") "You have no trainings saved"
+                else state.error
                 Text(
-                    text = state.error,
+                    text = errorMsg,
                     color = custom_color_red,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -111,8 +126,6 @@ fun ProfileScreen(
                 )
             }
         }
-
-
     }
 }
 

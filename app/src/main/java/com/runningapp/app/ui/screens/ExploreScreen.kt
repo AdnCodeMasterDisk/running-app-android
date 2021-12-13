@@ -1,5 +1,7 @@
 package com.runningapp.app.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +23,7 @@ import com.runningapp.app.ui.components.ShimmerAnimation
 import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.viewmodel.RunListViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ExploreScreen(
     modifier: Modifier = Modifier,
@@ -34,7 +37,7 @@ fun ExploreScreen(
                 LazyColumn {
                     repeat(5) {
                         item {
-                            ShimmerAnimation()
+                            ShimmerAnimation("activity")
                         }
                     }
                 }
@@ -63,5 +66,5 @@ fun ExploreScreen(
 @Preview(showBackground = true)
 @Composable
 fun ExploreScreenPreview() {
-    ExploreScreen(modifier = Modifier.fillMaxSize())
+   // ExploreScreen(modifier = Modifier.fillMaxSize())
 }

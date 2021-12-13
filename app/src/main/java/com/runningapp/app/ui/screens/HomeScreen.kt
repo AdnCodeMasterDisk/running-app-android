@@ -82,7 +82,6 @@ fun HomeScreen(navHostController: NavHostController) {
         ) {
             MonthlyGoalComponent()
 
-            Spacer(modifier = Modifier.height(24.dp))
 
             Box(
                 modifier = Modifier

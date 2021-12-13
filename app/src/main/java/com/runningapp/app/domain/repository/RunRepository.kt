@@ -20,4 +20,6 @@ interface RunRepository {
     suspend fun saveRun(mapFile: MultipartBody.Part, requestBody: MultipartBody.Part): ResponseBody
 
     suspend fun getUserLikedPosts(userId: Int): List<LikesDto>
+
+    suspend fun getUserMonthlyDistance(userId: Int): Long
 }

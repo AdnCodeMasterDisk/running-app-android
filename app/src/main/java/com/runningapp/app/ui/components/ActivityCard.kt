@@ -1,7 +1,10 @@
 package com.runningapp.app.ui.components
 
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.util.Base64
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -30,10 +33,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.runningapp.app.R
 import com.runningapp.app.domain.model.RunActivity
+import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.viewmodel.RunActivityViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ActivityCard(
     runActivity: RunActivity,
@@ -89,8 +96,10 @@ fun ActivityCard(
                     )
                     Column(modifier = Modifier.padding(horizontal = 8.dp)) {
                         Row {
+                            val parsedDate = LocalDateTime.parse(runActivity.date, DateTimeFormatter.ISO_DATE_TIME)
+                            val formattedDate = parsedDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy | HH:mm"))
                             Text(
-                                text = runActivity.date,
+                                text = formattedDate,
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }
@@ -121,7 +130,7 @@ fun ActivityCard(
                         } else {
                             "Dislike"
                         },
-                        tint = MaterialTheme.colorScheme.tertiary
+                        tint = custom_color_red
                     )
                 }
 
@@ -175,12 +184,12 @@ fun ActivityCard(
                 }
 
             }
-            if (expanded.value) {
+            AnimatedVisibility(visible = expanded.value) {
                 val imageBytes = Base64.decode(runActivity.mapImage.data, 0)
                 val image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                 Row(
                     modifier = Modifier
-                        .padding(end = 24.dp, start = 24.dp, bottom = 4.dp, top = extraPadding)
+                        .padding(top = extraPadding, bottom = 8.dp, start = 8.dp, end = 8.dp)
                         .fillMaxWidth(),
                 ) {
                     Image(
@@ -188,7 +197,7 @@ fun ActivityCard(
                         contentDescription = "Activity map preview",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(0.dp, 0.dp, 20.dp, 20.dp))
                             .weight(1f)
                             .size(mapSize)
                             .clickable(

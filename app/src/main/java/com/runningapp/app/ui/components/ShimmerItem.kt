@@ -14,8 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.runningapp.app.ui.theme.ShimmerColorShades
 
 @Composable
-fun ShimmerAnimation(
-) {
+fun ShimmerAnimation(itemType: String) {
     val transition = rememberInfiniteTransition()
     val translateAnim by transition.animateFloat(
         initialValue = 0f,
@@ -32,13 +31,20 @@ fun ShimmerAnimation(
         end = Offset(translateAnim, translateAnim)
     )
 
-    ShimmerItem(brush = brush)
+
+    if (itemType == "activity") {
+        ActivityShimmerItem(brush = brush)
+    }
+    if (itemType == "monthlyGoal"){
+        MonthlyGoalShimmerItem(brush = brush)
+    }
+
 
 }
 
 
 @Composable
-fun ShimmerItem(
+fun ActivityShimmerItem(
     brush: Brush
 ) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -47,6 +53,22 @@ fun ShimmerItem(
                 .fillMaxWidth()
                 .size(165.dp)
                 .padding(vertical = 8.dp, horizontal = 12.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(brush = brush)
+        )
+    }
+}
+
+@Composable
+fun MonthlyGoalShimmerItem(
+    brush: Brush
+) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .size(115.dp)
+                .padding(vertical = 4.dp, horizontal = 4.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(brush = brush)
         )

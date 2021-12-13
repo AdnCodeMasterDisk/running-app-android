@@ -40,4 +40,9 @@ class RunRepositoryImpl @Inject constructor(
     override suspend fun getUserLikedPosts(userId: Int): List<LikesDto> {
         return api.getUserLikedPosts(userId)
     }
+
+    override suspend fun getUserMonthlyDistance(userId: Int): Long {
+        return api.getUserMonthlyDistance(userId)
+    }
+
 }

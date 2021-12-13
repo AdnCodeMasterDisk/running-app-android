@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,6 +54,9 @@ import com.runningapp.app.ui.utils.Constants.POLYLINE_COLOR
 import com.runningapp.app.ui.utils.Constants.POLYLINE_WIDTH
 import com.runningapp.app.ui.utils.TrackingUtility
 import com.runningapp.app.ui.viewmodel.RunActivityViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -187,7 +191,9 @@ fun RunActivityScreen(
 
             Button(
                 onClick = {
+                    zoomAndSave()
                     endRunAndSaveToDb(
+                        navController,
                         viewModel,
                         totalTime.value,
                         caloriesBurned.value,
@@ -398,6 +404,14 @@ fun RunActivityScreen(
     }
 }
 
+
+private fun zoomAndSave() = runBlocking {
+    launch {
+        zoomToSeeWholeTrack()
+        delay(1000)
+    }
+}
+
 private fun startRun() {
     if (isTracking) {
         sendCommandToService(ACTION_PAUSE_SERVICE)
@@ -406,8 +420,10 @@ private fun startRun() {
     }
 }
 
-private fun stopRun() {
+private fun stopRun(navController: NavHostController) {
     sendCommandToService(ACTION_STOP_SERVICE)
+    navController.popBackStack()
+    navController.navigate("profile")
 }
 
 
@@ -478,9 +494,8 @@ private fun zoomToSeeWholeTrack() {
     )
 }
 
-private fun endRunAndSaveToDb(viewModel: RunActivityViewModel, totalTime: String, calories: Int, distanceInMeters: Int, pace : String, speed: Float) {
+private fun endRunAndSaveToDb(navController: NavHostController, viewModel: RunActivityViewModel, totalTime: String, calories: Int, distanceInMeters: Int, pace : String, speed: Float) {
     map?.snapshot { bmp ->
-        zoomToSeeWholeTrack()
         val runData = SaveRunRequest(2, totalTime, calories, distanceInMeters, pace, speed)
         val data = bitmapToMultipart(bmp)
         val jsonBody = Gson().toJson(runData)
@@ -489,7 +504,7 @@ private fun endRunAndSaveToDb(viewModel: RunActivityViewModel, totalTime: String
         if (data != null) {
             viewModel.saveRun(data, requestBody)
         }
-        stopRun()
+        stopRun(navController)
     }
 }
 fun bitmapToMultipart(imageBitmap: Bitmap?): MultipartBody.Part? {
