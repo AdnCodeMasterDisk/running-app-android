@@ -8,11 +8,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.navigation.NavHostController
 
 // Floating Action Button to open Run mode
 
 @Composable
-fun RunModeFAB() {
+fun RunModeFAB(
+    navController: NavHostController
+) {
     val openDialog = remember { mutableStateOf(false) }
 
     FloatingActionButton(
@@ -45,6 +48,8 @@ fun RunModeFAB() {
                 FilledTonalButton(
                     onClick = {
                         openDialog.value = false
+                        navController.popBackStack()
+                        navController.navigate("runMode")
                     }
                 ) {
                     Text("Yes")

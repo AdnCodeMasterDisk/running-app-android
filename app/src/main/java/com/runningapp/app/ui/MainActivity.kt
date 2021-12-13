@@ -71,7 +71,7 @@ fun MyApp() {
                 && navController.currentRoute() != "register"
                 && navController.currentRoute() != "home"
                 && navController.currentRoute() != "splash") {
-                RunModeFAB()
+                RunModeFAB(navController)
             }
         },
         drawerContent = {

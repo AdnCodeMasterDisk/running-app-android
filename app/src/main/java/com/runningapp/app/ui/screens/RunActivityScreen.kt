@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -84,6 +85,8 @@ fun RunActivityScreen(
     val caloriesBurned = remember { mutableStateOf(0) }
     val pace = remember { mutableStateOf("00'00''") }
     val isTrackingUI = remember { mutableStateOf(false) }
+
+    val userId = viewModel.userId.observeAsState()
 
     TrackingService.isTracking.observe(LocalLifecycleOwner.current, Observer {
         isTracking = it
@@ -192,15 +195,18 @@ fun RunActivityScreen(
             Button(
                 onClick = {
                     zoomAndSave()
-                    endRunAndSaveToDb(
-                        navController,
-                        viewModel,
-                        totalTime.value,
-                        caloriesBurned.value,
-                        distanceInMeters,
-                        pace.value,
-                        avgSpeed.value.toFloat()
-                    )
+                    userId.value?.let {
+                        endRunAndSaveToDb(
+                            navController,
+                            viewModel,
+                            it.toLong(),
+                            totalTime.value,
+                            caloriesBurned.value,
+                            distanceInMeters,
+                            pace.value,
+                            avgSpeed.value.toFloat()
+                        )
+                    }
                 },
                 modifier = Modifier
                     .padding(bottom = 12.dp)
@@ -408,7 +414,7 @@ fun RunActivityScreen(
 private fun zoomAndSave() = runBlocking {
     launch {
         zoomToSeeWholeTrack()
-        delay(1000)
+        delay(2000)
     }
 }
 
@@ -423,7 +429,7 @@ private fun startRun() {
 private fun stopRun(navController: NavHostController) {
     sendCommandToService(ACTION_STOP_SERVICE)
     navController.popBackStack()
-    navController.navigate("profile")
+    navController.navigate("home")
 }
 
 
@@ -494,9 +500,9 @@ private fun zoomToSeeWholeTrack() {
     )
 }
 
-private fun endRunAndSaveToDb(navController: NavHostController, viewModel: RunActivityViewModel, totalTime: String, calories: Int, distanceInMeters: Int, pace : String, speed: Float) {
+private fun endRunAndSaveToDb(navController: NavHostController, viewModel: RunActivityViewModel, userId: Long, totalTime: String, calories: Int, distanceInMeters: Int, pace : String, speed: Float) {
     map?.snapshot { bmp ->
-        val runData = SaveRunRequest(2, totalTime, calories, distanceInMeters, pace, speed)
+        val runData = SaveRunRequest(userId, totalTime, calories, distanceInMeters, pace, speed)
         val data = bitmapToMultipart(bmp)
         val jsonBody = Gson().toJson(runData)
         val requestBody = MultipartBody.Part.createFormData("requestBody", jsonBody)
