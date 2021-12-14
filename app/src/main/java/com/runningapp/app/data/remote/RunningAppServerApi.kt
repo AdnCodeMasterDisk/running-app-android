@@ -49,6 +49,18 @@ interface RunningAppServerApi {
 
     @GET("get-monthly-distance/user/{userId}")
     suspend fun getUserMonthlyDistance(@Path("userId") userId: Int): Long
+
+
+    // Challenges
+
+    @GET("challenges")
+    suspend fun getAllChallenges(): List<ChallengeDto>
+
+    @GET("user-challenges/user/{userId}")
+    suspend fun getAllUserChallenges(@Path("userId") userId: Int): List<UserChallengesDto>
+
+    @POST("user/{userId}/join/{challengeId}")
+    suspend fun joinChallenge(@Path("userId") userId: Int, @Path("challengeId") challengeId: Int): ResponseBody
 }
 
 

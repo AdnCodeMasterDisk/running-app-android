@@ -38,6 +38,9 @@ fun ShimmerAnimation(itemType: String) {
     if (itemType == "monthlyGoal"){
         MonthlyGoalShimmerItem(brush = brush)
     }
+    if (itemType == "challenge"){
+        ChallengeShimmerItem(brush = brush)
+    }
 
 
 }
@@ -69,6 +72,23 @@ fun MonthlyGoalShimmerItem(
                 .fillMaxWidth()
                 .size(115.dp)
                 .padding(vertical = 4.dp, horizontal = 4.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(brush = brush)
+        )
+    }
+}
+
+@Composable
+fun ChallengeShimmerItem(
+    brush: Brush
+) {
+    Column() {
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(172.dp)
+                .width(128.dp)
+                .padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(brush = brush)
         )

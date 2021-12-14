@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.runningapp.app.common.Resource
 import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.domain.use_case.GetAllSharedRunActivitiesUseCase
+import com.runningapp.app.domain.use_case.GetAllUserChallengesUseCase
 import com.runningapp.app.domain.use_case.GetAllUserRunActivitiesUseCase
 import com.runningapp.app.ui.utils.RunListState
+import com.runningapp.app.ui.utils.UserChallengesListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -18,13 +20,18 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
-class UserRunListViewModel @Inject constructor(
+class ProfileViewModel @Inject constructor(
     private val getAllUserRunActivitiesUseCase: GetAllUserRunActivitiesUseCase,
+    private val getAllUserChallengesUseCase: GetAllUserChallengesUseCase,
     userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _state = mutableStateOf(RunListState())
     val state: State<RunListState> = _state
+
+    private val _userChallengesState = mutableStateOf(UserChallengesListState())
+    val userChallengesState: State<UserChallengesListState> = _userChallengesState
+
     var userId: LiveData<Int?> = userPreferences.userId.asLiveData()
 
     fun getAllUserRunActivities(userId: Int) {
@@ -40,6 +47,24 @@ class UserRunListViewModel @Inject constructor(
                 }
                 is Resource.Loading -> {
                     _state.value = RunListState(isLoading = true)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun getAllUserChallenges(userId: Int) {
+        getAllUserChallengesUseCase(userId).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _userChallengesState.value = UserChallengesListState(userChallenges = result.data ?: emptyList())
+                }
+                is Resource.Error -> {
+                    _userChallengesState.value = UserChallengesListState(
+                        error = result.message ?: "An unexpected error occurred"
+                    )
+                }
+                is Resource.Loading -> {
+                    _userChallengesState.value = UserChallengesListState(isLoading = true)
                 }
             }
         }.launchIn(viewModelScope)

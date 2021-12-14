@@ -84,7 +84,7 @@ fun UserTrainingActivityCard(
                     }
                 ) {
                     Text(
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.labelLarge,
                         text = if (isShared.value) {
                             "Unshare"

@@ -6,8 +6,10 @@ import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.data.remote.RunningAppServerApi
 import com.runningapp.app.data.repository.RunRepositoryImpl
 import com.runningapp.app.data.repository.AuthRepositoryImpl
+import com.runningapp.app.data.repository.ChallengeRepositoryImpl
 import com.runningapp.app.domain.repository.RunRepository
 import com.runningapp.app.domain.repository.AuthRepository
+import com.runningapp.app.domain.repository.ChallengeRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,6 +43,12 @@ object AppModule {
     @Singleton
     fun provideRunRepository(api: RunningAppServerApi): RunRepository {
         return RunRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChallengeRepository(api: RunningAppServerApi): ChallengeRepository {
+        return ChallengeRepositoryImpl(api)
     }
 
     @Provides

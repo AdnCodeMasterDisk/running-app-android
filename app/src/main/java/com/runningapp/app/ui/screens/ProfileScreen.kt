@@ -7,15 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,17 +25,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.runningapp.app.ui.components.*
 import com.runningapp.app.ui.theme.custom_color_red
+import com.runningapp.app.ui.theme.custom_color_yellow
 import com.runningapp.app.ui.utils.SimpleListDataItem
-import com.runningapp.app.ui.viewmodel.RunListViewModel
-import com.runningapp.app.ui.viewmodel.UserRunListViewModel
-import kotlin.math.roundToInt
+import com.runningapp.app.ui.viewmodel.ProfileViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     simpleListDataItems: List<SimpleListDataItem>,
-    viewModel: UserRunListViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val expanded = remember { mutableStateOf(false) }
 
@@ -64,17 +58,66 @@ fun ProfileScreen(
 
             LaunchedEffect(key1 = true) {
                 userId.value?.let { viewModel.getAllUserRunActivities(it) }
+                userId.value?.let { viewModel.getAllUserChallenges(it) }
             }
-            Text(
-                text = "Challenges",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp)
-            )
-            LazyRow(modifier = Modifier.fillMaxWidth()) {
-                items(simpleListDataItems) { data ->
-                    ChallengeTile(simpleListDataItem = data)
+
+            val userChallengesState = viewModel.userChallengesState.value
+            Row(
+                modifier = Modifier
+                    .padding(vertical = 6.dp, horizontal = 24.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(modifier = Modifier.weight(1f)){
+                    Text(
+                        text = "Challenges",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+                Row() {
+                    Icon(
+                        imageVector =  Icons.Outlined.EmojiEvents,
+                        contentDescription = "Challenges",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = (userChallengesState.userChallenges.count { it.isCompleted }).toString() + " completed",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
+
+            if (userChallengesState.isLoading) {
+                LazyRow(modifier = Modifier.padding(horizontal = 4.dp)) {
+                    repeat(5) {
+                        item {
+                            ShimmerAnimation("challenge")
+                        }
+                    }
+                }
+            }
+            if (userChallengesState.userChallenges.isNotEmpty()) {
+                LazyRow(modifier = Modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
+                    items(userChallengesState.userChallenges) { data ->
+                        UserChallengeTile(userChallenge = data)
+                    }
+                }
+            }
+            if (userChallengesState.error.isNotBlank()) {
+                val errorMsg = if (userChallengesState.error == "HTTP 404 ") "You have no challenges"
+                else userChallengesState.error
+                Text(
+                    text = errorMsg,
+                    color = custom_color_red,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
+            }
+
             val state = viewModel.state.value
 
             Text(

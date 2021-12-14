@@ -1,8 +1,6 @@
 package com.runningapp.app.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material3.*
@@ -19,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.runningapp.app.ui.theme.custom_color_red
 import com.runningapp.app.ui.viewmodel.MonthlyGoalViewModel
-import com.runningapp.app.ui.viewmodel.UserRunListViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.roundToInt
