@@ -9,12 +9,11 @@ import androidx.lifecycle.viewModelScope
 import com.runningapp.app.common.Resource
 import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.domain.use_case.GetAllChallengesUseCase
-import com.runningapp.app.domain.use_case.GetAllSharedRunActivitiesUseCase
 import com.runningapp.app.domain.use_case.GetAllUserChallengesUseCase
 import com.runningapp.app.domain.use_case.JoinChallengeUseCase
+import com.runningapp.app.domain.use_case.LeaveChallengeUseCase
 import com.runningapp.app.ui.utils.ChallengeListState
-import com.runningapp.app.ui.utils.JoinChallengeState
-import com.runningapp.app.ui.utils.RunListState
+import com.runningapp.app.ui.utils.JoinLeaveChallengeState
 import com.runningapp.app.ui.utils.UserChallengesListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -26,6 +25,7 @@ class ChallengesViewModel @Inject constructor(
     private val getAllChallengesUseCase: GetAllChallengesUseCase,
     private val getAllUserChallengesUseCase: GetAllUserChallengesUseCase,
     private val joinChallengeUseCase: JoinChallengeUseCase,
+    private val leaveChallengeUseCase: LeaveChallengeUseCase,
     userPreferences: UserPreferences
 ) : ViewModel() {
 
@@ -35,8 +35,11 @@ class ChallengesViewModel @Inject constructor(
     private val _userChallengesState = mutableStateOf(UserChallengesListState())
     val userChallengesState: State<UserChallengesListState> = _userChallengesState
 
-    private val _joinChallengeState = mutableStateOf(JoinChallengeState())
-    val joinChallengeState: State<JoinChallengeState> = _joinChallengeState
+    private var _joinChallengeState = mutableStateOf(JoinLeaveChallengeState())
+    val joinChallengeState: State<JoinLeaveChallengeState> = _joinChallengeState
+
+    private var _leaveChallengeState = mutableStateOf(JoinLeaveChallengeState())
+    val leaveChallengeState: State<JoinLeaveChallengeState> = _leaveChallengeState
 
     var userId: LiveData<Int?> = userPreferences.userId.asLiveData()
 
@@ -44,7 +47,7 @@ class ChallengesViewModel @Inject constructor(
         getAllChallenges()
     }
 
-    private fun getAllChallenges() {
+    fun getAllChallenges() {
         getAllChallengesUseCase().onEach { result ->
             when (result) {
                 is Resource.Success -> {
@@ -84,17 +87,41 @@ class ChallengesViewModel @Inject constructor(
         joinChallengeUseCase(userId, challengeId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _joinChallengeState.value = JoinChallengeState(responseBody = result.data)
+                    _joinChallengeState.value = JoinLeaveChallengeState(responseBody = result.data)
                 }
                 is Resource.Error -> {
-                    _joinChallengeState.value = JoinChallengeState(
+                    _joinChallengeState.value = JoinLeaveChallengeState(
                         error = result.message ?: "An unexpected error occurred"
                     )
                 }
                 is Resource.Loading -> {
-                    _joinChallengeState.value = JoinChallengeState(isLoading = true)
+                    _joinChallengeState.value = JoinLeaveChallengeState(isLoading = true)
                 }
             }
         }.launchIn(viewModelScope)
     }
+
+    fun leaveChallenge(userId: Int, challengeId: Int) {
+        leaveChallengeUseCase(userId, challengeId).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _leaveChallengeState.value = JoinLeaveChallengeState(responseBody = result.data)
+                }
+                is Resource.Error -> {
+                    _leaveChallengeState.value = JoinLeaveChallengeState(
+                        error = result.message ?: "An unexpected error occurred"
+                    )
+                }
+                is Resource.Loading -> {
+                    _leaveChallengeState.value = JoinLeaveChallengeState(isLoading = true)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun clearState() {
+        _joinChallengeState.value = JoinLeaveChallengeState(responseBody = null)
+        _leaveChallengeState.value = JoinLeaveChallengeState(responseBody = null)
+    }
+
 }

@@ -1,15 +1,10 @@
 package com.runningapp.app.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.Snackbar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -17,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.runningapp.app.domain.model.Challenge
@@ -44,16 +39,18 @@ fun ChallengeTile(
         hasActiveChallenge.value = true
     }
 
-    if (userChallengesState.userChallenges.any { it.id.challengeId == challenge.id && it.isCompleted }) {
+    if (userChallengesState.userChallenges.any { it.challenge.id == challenge.id && it.isCompleted }) {
         finished.value = true
     }
 
-    if (userChallengesState.userChallenges.any { it.id.challengeId == challenge.id }) {
+    if (userChallengesState.userChallenges.any { it.challenge.id == challenge.id }) {
         isParticipating.value = true
     }
 
-    val expand = remember { mutableStateOf(false)}
-    val showErrorText = remember { mutableStateOf(false)}
+    val openDialog = remember { mutableStateOf(false)}
+
+    val joinChallengeState = viewModel.joinChallengeState.value
+
 
     Box(modifier = Modifier
         .padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)
@@ -68,7 +65,7 @@ fun ChallengeTile(
                     enabled = true,
                     onClickLabel = "Join challenge",
                     onClick = {
-                        expand.value = !expand.value
+                        openDialog.value = true
                     },
                 ),
             shadowElevation = 4.dp
@@ -105,26 +102,64 @@ fun ChallengeTile(
                 )
             }
         }
-        if (expand.value) {
-            Button(
-                onClick = {
-                    if (!hasActiveChallenge.value) {
-                        userId.value?.let { viewModel.joinChallenge(it, challenge.id) }
+        if (openDialog.value && !finished.value && !isParticipating.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    openDialog.value = false
+                },
+                title = {
+                    Text(text = challenge.name)
+                },
+                text = {
+                    if (joinChallengeState.isLoading) {
+                        CircularProgressIndicator()
+                    } else if (joinChallengeState.responseBody != null) {
+                        Text(text = "Successfully joined challenge!")
+                        openDialog.value = false
+                        viewModel.clearState()
+                        viewModel.getAllChallenges()
+                    } else if (joinChallengeState.error.isNotBlank()) {
+                        Text(
+                            text = joinChallengeState.error,
+                            color = custom_color_red,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                        )
+                    } else {
+                        Text(text = challenge.description)
                     }
                 },
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(75.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = custom_color_yellow)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = "Delete",
-                    tint = Color.White,
-                    modifier = Modifier.size(64.dp),
-                )
-            }
+                confirmButton = {
+                    if (!hasActiveChallenge.value) {
+                        Button(
+                            onClick = {
+                                userId.value?.let { viewModel.joinChallenge(it, challenge.id) }
+                            }
+                        ) {
+                            Text("Join challenge")
+                        }
+                    } else {
+                        Button(
+                            enabled = false,
+                            onClick = {
+                            }
+                        ) {
+                            Text("You have an active challenge")
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            openDialog.value = false
+                        }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

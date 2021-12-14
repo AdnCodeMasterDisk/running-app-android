@@ -23,4 +23,8 @@ class ChallengeRepositoryImpl @Inject constructor(
         return api.joinChallenge(userId, challengeId)
     }
 
+    override suspend fun leaveChallenge(userId: Int, challengeId: Int): ResponseBody {
+        return api.leaveChallenge(userId, challengeId)
+    }
+
 }

@@ -6,7 +6,7 @@ data class UserChallengesDto(
     val challenge: Challenge,
     val completeDate: String,
     val currentAmount: Int,
-    val id: Id,
+    val id: Int,
     val isCompleted: Boolean,
     val joinDate: String,
     val user: User

@@ -59,8 +59,12 @@ interface RunningAppServerApi {
     @GET("user-challenges/user/{userId}")
     suspend fun getAllUserChallenges(@Path("userId") userId: Int): List<UserChallengesDto>
 
-    @POST("user/{userId}/join/{challengeId}")
+    @POST("user/{userId}/join-challenge/{challengeId}")
     suspend fun joinChallenge(@Path("userId") userId: Int, @Path("challengeId") challengeId: Int): ResponseBody
+
+    @DELETE("user/{userId}/leave-challenge/{challengeId}")
+    suspend fun leaveChallenge(@Path("userId") userId: Int, @Path("challengeId") challengeId: Int): ResponseBody
+
 }
 
 

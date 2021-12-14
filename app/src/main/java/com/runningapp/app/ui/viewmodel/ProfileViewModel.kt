@@ -22,15 +22,11 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getAllUserRunActivitiesUseCase: GetAllUserRunActivitiesUseCase,
-    private val getAllUserChallengesUseCase: GetAllUserChallengesUseCase,
     userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _state = mutableStateOf(RunListState())
     val state: State<RunListState> = _state
-
-    private val _userChallengesState = mutableStateOf(UserChallengesListState())
-    val userChallengesState: State<UserChallengesListState> = _userChallengesState
 
     var userId: LiveData<Int?> = userPreferences.userId.asLiveData()
 
@@ -47,24 +43,6 @@ class ProfileViewModel @Inject constructor(
                 }
                 is Resource.Loading -> {
                     _state.value = RunListState(isLoading = true)
-                }
-            }
-        }.launchIn(viewModelScope)
-    }
-
-    fun getAllUserChallenges(userId: Int) {
-        getAllUserChallengesUseCase(userId).onEach { result ->
-            when (result) {
-                is Resource.Success -> {
-                    _userChallengesState.value = UserChallengesListState(userChallenges = result.data ?: emptyList())
-                }
-                is Resource.Error -> {
-                    _userChallengesState.value = UserChallengesListState(
-                        error = result.message ?: "An unexpected error occurred"
-                    )
-                }
-                is Resource.Loading -> {
-                    _userChallengesState.value = UserChallengesListState(isLoading = true)
                 }
             }
         }.launchIn(viewModelScope)

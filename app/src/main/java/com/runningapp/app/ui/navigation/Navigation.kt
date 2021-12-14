@@ -1,5 +1,7 @@
 package com.runningapp.app.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -26,6 +28,7 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
     object SplashScreen : NavigationItem("splash",Icons.Outlined.Splitscreen,"Splash Screen")
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Navigation(navController: NavHostController) {
     val dataItems = (0..10).map { SimpleListDataItem("Username") }
@@ -38,7 +41,7 @@ fun Navigation(navController: NavHostController) {
             HomeScreen(navController)
         }
         composable(NavigationItem.Profile.route) {
-            ProfileScreen(modifier = Modifier.fillMaxSize(), dataItems2)
+            ProfileScreen()
         }
         composable(NavigationItem.Explore.route) {
             ExploreScreen(modifier = Modifier.fillMaxSize())

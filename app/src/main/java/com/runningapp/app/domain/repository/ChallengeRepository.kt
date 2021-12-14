@@ -10,4 +10,6 @@ interface ChallengeRepository {
     suspend fun getAllUserChallenges(userId: Int): List<UserChallengesDto>
 
     suspend fun joinChallenge(userId: Int, challengeId: Int): ResponseBody
+
+    suspend fun leaveChallenge(userId: Int, challengeId: Int): ResponseBody
 }
