@@ -1,6 +1,7 @@
 package com.runningapp.app.di
 
 import android.content.Context
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.runningapp.app.common.Constants
 import com.runningapp.app.data.UserPreferences
 import com.runningapp.app.data.remote.RunningAppServerApi
@@ -56,4 +57,11 @@ object AppModule {
     fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
         return UserPreferences(context)
     }
+
+    @Provides
+    @Singleton
+    fun provideFusedLocationProviderClient(
+        @ApplicationContext app: Context
+    ) = FusedLocationProviderClient(app)
+
 }

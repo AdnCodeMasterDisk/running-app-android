@@ -25,7 +25,6 @@ import com.runningapp.app.ui.viewmodel.RunListViewModel
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChallengesScreen(
-    simpleListDataItems: List<SimpleListDataItem>,
     viewModel: ChallengesViewModel = hiltViewModel()
 ) {
     Column(
@@ -71,6 +70,5 @@ fun ChallengesScreen(
 @Preview(showBackground = true)
 @Composable
 fun ChallengesScreenPreview() {
-    val dataItems = (0..10).map { SimpleListDataItem("30 km in October") }
-    ChallengesScreen(dataItems)
+    ChallengesScreen()
 }

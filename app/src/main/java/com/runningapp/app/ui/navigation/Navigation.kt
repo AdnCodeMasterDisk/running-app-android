@@ -31,8 +31,6 @@ sealed class NavigationItem(var route: String, var icon: ImageVector, var title:
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Navigation(navController: NavHostController) {
-    val dataItems = (0..10).map { SimpleListDataItem("Username") }
-    val dataItems2 = (0..10).map { SimpleListDataItem("30 km in October") }
     NavHost(navController, startDestination = NavigationItem.SplashScreen.route) {
         composable(NavigationItem.SplashScreen.route) {
             SplashScreen(navController)
@@ -47,7 +45,7 @@ fun Navigation(navController: NavHostController) {
             ExploreScreen(modifier = Modifier.fillMaxSize())
         }
         composable(NavigationItem.Challenges.route) {
-            ChallengesScreen(dataItems2)
+            ChallengesScreen()
         }
         composable(NavigationItem.Settings.route) {
             SettingsScreen()

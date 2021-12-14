@@ -13,6 +13,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,11 +25,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionsRequired
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -35,12 +41,18 @@ import com.runningapp.app.R
 import com.runningapp.app.service.TrackingService
 import com.runningapp.app.ui.components.MonthlyGoalComponent
 import com.runningapp.app.ui.map.rememberMapViewWithLifecycle
+import com.runningapp.app.ui.navigation.NavigationItem
 import com.runningapp.app.ui.utils.Constants
+import com.runningapp.app.ui.viewmodel.ChallengesViewModel
+import com.runningapp.app.ui.viewmodel.HomeMapViewModel
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun HomeScreen(navHostController: NavHostController) {
+fun HomeScreen(
+    navHostController: NavHostController,
+    viewModel: HomeMapViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     var map: GoogleMap? = null
 
@@ -50,6 +62,8 @@ fun HomeScreen(navHostController: NavHostController) {
             Manifest.permission.ACCESS_COARSE_LOCATION,
         )
     )
+
+    val lastKnownLocation by viewModel.lastKnownLocation.observeAsState()
 
     Column(
         modifier = Modifier
@@ -109,6 +123,18 @@ fun HomeScreen(navHostController: NavHostController) {
                                     )
                                 )
                             }
+
+                            viewModel.requestForLastKnownLocation()
+
+                            if (lastKnownLocation != null) {
+                                map?.animateCamera(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        lastKnownLocation!!,
+                                        Constants.MAP_ZOOM
+                                    )
+                                )
+                            }
+
                         }
                     }
                 }
