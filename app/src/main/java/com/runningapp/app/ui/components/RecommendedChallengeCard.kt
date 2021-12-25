@@ -20,7 +20,7 @@ fun RecommendedChallengeCard(name: String) {
     if (!hidden.value) {
         Surface(
             onClick = { /* TO DO */ },
-            color = MaterialTheme.colorScheme.tertiary,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 12.dp)
                 .clip(RoundedCornerShape(20.dp))

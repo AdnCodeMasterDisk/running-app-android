@@ -26,7 +26,7 @@ class HomeMapViewModel @Inject constructor(
     val lastKnownLocation: LiveData<LatLng?> get() = _lastKnownLocation
 
     init {
-        requestForLastKnownLocation()
+      //  requestForLastKnownLocation()
     }
 
     fun requestForLastKnownLocation() {

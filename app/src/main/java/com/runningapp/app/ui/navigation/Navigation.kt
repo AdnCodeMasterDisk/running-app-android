@@ -17,7 +17,7 @@ import com.runningapp.app.ui.utils.SimpleListDataItem
 
 sealed class NavigationItem(var route: String, var icon: ImageVector, var title: String) {
     object Profile : NavigationItem("profile", Icons.Outlined.Person, "Profile")
-    object Home : NavigationItem("home", Icons.Outlined.DirectionsRun, "Home")
+    object Home : NavigationItem("home", Icons.Outlined.DirectionsRun, "Run")
     object Explore : NavigationItem("explore", Icons.Outlined.Explore, "Explore")
     object Challenges : NavigationItem("challenges", Icons.Outlined.EmojiEvents, "Challenges")
     object Settings : NavigationItem("settings", Icons.Outlined.Settings, "Settings")

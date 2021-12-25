@@ -4,7 +4,6 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Base64
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.DirectionsRun
@@ -54,7 +51,6 @@ fun ActivityCard(
         if (mapExpanded.value) 300.dp else 100.dp
     )
 
-    val expanded = remember { mutableStateOf(false) }
 
     val liked = remember { mutableStateOf(false) }
     val frontLikes = remember { mutableStateOf(runActivity.likesAmount) }
@@ -69,9 +65,6 @@ fun ActivityCard(
         liked.value = true
     }
 
-    val extraPadding by animateDpAsState(
-        if (expanded.value) 18.dp else 0.dp
-    )
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier
@@ -184,44 +177,28 @@ fun ActivityCard(
                 }
 
             }
-            AnimatedVisibility(visible = expanded.value) {
-                val imageBytes = Base64.decode(runActivity.mapImage.data, 0)
-                val image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                Row(
-                    modifier = Modifier
-                        .padding(top = extraPadding, bottom = 8.dp, start = 8.dp, end = 8.dp)
-                        .fillMaxWidth(),
-                ) {
-                    Image(
-                        bitmap = image.asImageBitmap(),
-                        contentDescription = "Activity map preview",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(0.dp, 0.dp, 20.dp, 20.dp))
-                            .weight(1f)
-                            .size(mapSize)
-                            .clickable(
-                                enabled = true,
-                                onClickLabel = "Expand map",
-                                onClick =
-                                {
-                                    mapExpanded.value = !mapExpanded.value
-                                }
-                            )
-                    )
-                }
-            }
-            IconButton(
-                onClick = { expanded.value = !expanded.value },
-                modifier = Modifier.fillMaxWidth()
+            val imageBytes = Base64.decode(runActivity.mapImage.data, 0)
+            val image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            Row(
+                modifier = Modifier
+                    .padding(top = 16.dp, bottom = 8.dp, start = 8.dp, end = 8.dp)
+                    .fillMaxWidth(),
             ) {
-                Icon(
-                    imageVector = if (expanded.value) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    contentDescription = if (expanded.value) {
-                        "Show less"
-                    } else {
-                        "Show more"
-                    },
+                Image(
+                    bitmap = image.asImageBitmap(),
+                    contentDescription = "Activity map preview",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(0.dp, 0.dp, 20.dp, 20.dp))
+                        .weight(1f)
+                        .size(mapSize)
+                        .clickable(
+                            enabled = true,
+                            onClickLabel = "Expand map",
+                            onClick = {
+                                mapExpanded.value = !mapExpanded.value
+                            }
+                        )
                 )
             }
         }

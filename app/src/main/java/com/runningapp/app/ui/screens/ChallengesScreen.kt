@@ -58,7 +58,7 @@ fun ChallengesScreen(
             LazyColumn {
                 repeat(5) {
                     item {
-                        ShimmerAnimation("activity")
+                        ShimmerAnimation("challenge")
                     }
                 }
             }

@@ -87,7 +87,7 @@ fun ChallengeTile(
                     style = MaterialTheme.typography.labelSmall
                 )
                 LinearProgressIndicator(
-                    progress = if (finished.value) 1f else 0.02f,
+                    progress = if (finished.value) 1f else 0.01f,
                     backgroundColor = Color.White,
                     color = custom_color_yellow,
                     modifier = Modifier

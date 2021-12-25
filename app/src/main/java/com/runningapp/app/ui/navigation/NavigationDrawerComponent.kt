@@ -41,7 +41,7 @@ fun Drawer(
         NavigationItem.Profile,
         NavigationItem.Explore,
         NavigationItem.Challenges,
-        NavigationItem.Settings
+       // NavigationItem.Settings
     )
     val itemsWhenNotLoggedIn = listOf(
         NavigationItem.Login,

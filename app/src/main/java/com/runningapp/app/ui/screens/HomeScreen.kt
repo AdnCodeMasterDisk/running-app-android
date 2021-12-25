@@ -63,8 +63,6 @@ fun HomeScreen(
         )
     )
 
-    val lastKnownLocation by viewModel.lastKnownLocation.observeAsState()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -96,7 +94,6 @@ fun HomeScreen(
         ) {
             MonthlyGoalComponent()
 
-
             Box(
                 modifier = Modifier
                     .height(400.dp)
@@ -110,6 +107,7 @@ fun HomeScreen(
                         .clip(RoundedCornerShape(40.dp))
                         .height(350.dp)
                 ) {
+                    val lastKnownLocation by viewModel.lastKnownLocation.observeAsState()
                     val dark = isSystemInDarkTheme()
                     val mapViewWithLifecycle = rememberMapViewWithLifecycle()
                     AndroidView(factory = { mapViewWithLifecycle }) { mapView ->

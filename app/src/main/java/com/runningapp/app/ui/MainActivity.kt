@@ -1,9 +1,11 @@
 package com.runningapp.app.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +28,7 @@ import dagger.hilt.android.HiltAndroidApp
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +40,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalMaterial3Api
 @Composable
 fun MyApp() {
@@ -55,7 +59,7 @@ fun MyApp() {
                 && navController.currentRoute() != "register"
                 && navController.currentRoute() != "splash") {
                 val topBarText = when (navController.currentRoute()) {
-                    "home" -> "Hello Adam!"
+                    "home" -> "Hello!"
                     "profile" -> "Your profile"
                     "explore" -> "Explore the community"
                     "challenges" -> "Challenges"

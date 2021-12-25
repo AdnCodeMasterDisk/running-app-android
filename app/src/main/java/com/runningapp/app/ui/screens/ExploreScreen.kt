@@ -31,7 +31,7 @@ fun ExploreScreen(
 ) {
     Surface(color = MaterialTheme.colorScheme.background) {
         Column {
-            RecommendedChallengeCard(name = "Complete a 10 km run")
+          //  RecommendedChallengeCard(name = "Complete a 10 km run")
             val state = viewModel.state.value
             if(state.isLoading) {
                 LazyColumn {
